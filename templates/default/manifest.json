@@ -1,0 +1,16 @@
+{
+  "tool_id": "{{TOOL_ID}}",
+  "name": "{{NAME}}",
+  "description": "{{DESCRIPTION}}",
+  "revision": "0.1.0",
+  "author": "{{AUTHOR}}",
+  "publish_date": "{{PUBLISH_DATE}}",
+  "core_api_version": "{{CORE_API_VERSION}}",
+  "entry_backend": "tool.{{CLASS_NAME}}",
+  "entry_frontend": "index.html",
+  "page": "{{TOOL_ID}}",
+  "repo_url": "{{REPO_URL}}",
+  "api_routes": [
+    { "path": "run", "handler": "tool.RunHandler" }
+  ]
+}

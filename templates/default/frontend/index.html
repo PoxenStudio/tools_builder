@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>{{NAME}}</title>
+  <style>
+    body { font-family: system-ui, -apple-system, sans-serif; margin: 24px; color: #222; }
+    body[data-theme="dark"] { background: #121212; color: #eee; }
+    button { padding: 8px 16px; cursor: pointer; }
+    pre { background: rgba(128, 128, 128, 0.15); padding: 12px; border-radius: 6px; overflow: auto; }
+  </style>
+</head>
+<body>
+  <h1>{{NAME}}</h1>
+  <p id="status">loading...</p>
+  <button id="run-btn">Run</button>
+  <pre id="result"></pre>
+
+  <!--
+    MyBooksToolBridge 由宿主 MyBooks 在运行时提供（app/public/static/toolbox-bridge.js，
+    随 mybooks/mybooks 核心仓库构建发布），本地用 `mybooks-tool dev` 预览时（未来能力）会
+    注入一份本地 mock 实现，接口形状一致。见 document/Toolbox_Dynamic_Design.md 4.3 节。
+  -->
+  <script src="/static/toolbox-bridge.js"></script>
+  <script>
+    var bridge = window.MyBooksToolBridge;
+    document.body.setAttribute('data-theme', bridge.theme);
+    document.getElementById('status').textContent =
+      'theme=' + bridge.theme + ' locale=' + bridge.locale;
+
+    document.getElementById('run-btn').addEventListener('click', function () {
+      bridge.fetch('run').then(function (data) {
+        document.getElementById('result').textContent = JSON.stringify(data, null, 2);
+        bridge.notify('Run finished', 'success');
+      }).catch(function (err) {
+        bridge.notify('Run failed: ' + err, 'error');
+      });
+    });
+  </script>
+</body>
+</html>

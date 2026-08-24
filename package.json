@@ -1,0 +1,34 @@
+{
+  "name": "mybooks-tool-builder",
+  "version": "0.1.0",
+  "description": "Scaffold / build / validate CLI for MyBooks Toolbox external plugins (mybooks-tool)",
+  "license": "MIT",
+  "author": "PoxenStudio",
+  "type": "commonjs",
+  "bin": {
+    "mybooks-tool": "bin/mybooks-tool.js"
+  },
+  "main": "src/index.js",
+  "files": [
+    "bin",
+    "src",
+    "templates",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "test": "node --test test/*.test.js"
+  },
+  "dependencies": {
+    "adm-zip": "^0.6.0",
+    "commander": "^15.0.0"
+  },
+  "keywords": [
+    "mybooks",
+    "toolbox",
+    "plugin",
+    "cli"
+  ]
+}
