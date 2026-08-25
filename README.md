@@ -27,7 +27,8 @@ mytool init tool_name \
   --name "我的工具" \
   --author "你的名字" \
   --description "工具做什么" \
-  --repo-url "https://github.com/you/tool_name"
+  --repo-url "https://github.com/you/tool_name" \
+  --locales en,zh
 
 cd tool_name
 # 改 backend/tool.py 和 frontend/index.html，写你的业务逻辑
@@ -53,8 +54,10 @@ mytool build            # 产出 dist/tool_name-0.1.0.zip，打印 sha256
 | `mytool build [dir]` | 校验并打包成 `dist/<tool_id>-<revision>.zip`，打印 sha256 |
 | `mytool bump <major\|minor\|patch> [dir]` | 按 semver 规则升级 `manifest.json` 里的 `revision` |
 
-`init` 支持的选项：`--name` / `--author` / `--description` / `--repo-url` / `--outdir`；
-不带这些选项时会在终端里交互式询问（非 TTY 环境下静默用空值/默认值，不会挂起）。
+`init` 支持的选项：`--name` / `--author` / `--description` / `--repo-url` / `--locales` /
+`--outdir`；不带这些选项时会在终端里交互式询问（非 TTY 环境下静默用空值/默认值，不会挂起）。
+`--locales`（默认 `en,zh`）决定生成哪些 `frontend/locales/<code>.json`，见下方"多语言（i18n）"
+一节。
 
 ## 包结构
 
@@ -85,6 +88,8 @@ tool_name/
 | `entry_frontend` | 否 | 前端入口文件（相对 `frontend/`），缺省则工具没有 UI |
 | `page` | 否 | 落地页路径，缺省用 `tool_id` |
 | `api_routes` | 否 | 自定义后端接口，`[{"path": "...", "handler": "<module>.<ClassName>"}]` |
+| `locales` | 否 | 工具支持的语言代码列表，例如 `["en", "zh"]`；纯展示性质（商店/管理端用），不参与后端加载校验 |
+| `default_locale` | 否 | 缺省语言，必须在 `locales` 里 |
 
 ### `.toolbuilder.json`
 
@@ -126,10 +131,48 @@ MyBooks 实例。
 和宿主的前端框架版本一致。运行时通过 `<script src="/static/toolbox-bridge.js">` 获得
 `window.MyBooksToolBridge`：
 
-- `bridge.theme` / `bridge.locale` —— 当前宿主的主题（`"light"`/`"dark"`）与语言
+- `bridge.theme` / `bridge.locale` —— 当前宿主的主题（`"light"`/`"dark"`）与语言，读取的
+  始终是最新值（宿主切换主题/语言不会重新加载 iframe，见下方"主题/语言运行时更新"）
+- `bridge.onThemeChange(fn)` / `bridge.onLocaleChange(fn)` —— 订阅主题/语言变化的推送，
+  `fn(newValue, oldValue)`，返回取消订阅函数；不订阅也没关系，`bridge.theme`/
+  `bridge.locale` 本身随时读到的都是最新值，只是不会主动收到"变了"的通知
 - `bridge.fetch(path, options)` —— 请求 `/api/toolbox/tool/{tool_id}/{path}`，Cookie
   自动带上，不需要额外处理鉴权
 - `bridge.notify(message, level)` —— 请求宿主用它自己的提示组件展示一条消息
+
+### 主题/语言运行时更新
+
+宿主切换深浅色主题或界面语言时，**不会**重新加载工具的 iframe——只会通过 `postMessage`
+把新值推给 `toolbox-bridge.js`，由它更新 `bridge.theme`/`bridge.locale` 并触发
+`onThemeChange`/`onLocaleChange` 回调。工具首次加载时仍从 URL query 里同步拿到初始值
+（不用等这套推送），此后的变化都走这条路径。
+
+### 多语言（i18n）
+
+`init` 默认生成一套开箱即用、跟框架无关的 i18n 胶水（`frontend/lib/i18n.js` +
+`frontend/locales/{manifest,en,zh}.json`），边界是：**翻译字串永远归工具自己所有**，
+`toolbox-bridge.js` 只提供"当前该用哪个语言 + 语言变了通知你"，不托管任何字串。
+
+```html
+<script src="/static/toolbox-bridge.js"></script>
+<script src="lib/i18n.js"></script>
+<script>
+  var i18n = window.MyBooksToolI18n.create();
+  i18n.ready.then(function () {
+    document.getElementById('status').textContent = i18n.t('status.ready');
+  });
+</script>
+<p id="status" data-i18n="status.loading">loading...</p>
+```
+
+- `frontend/locales/manifest.json` 声明 `default` 与 `locales`（由 `--locales` 生成）；
+  `i18n.t(key, params)` 取当前语言字串（缺失回退到 default，再缺失原样返回 key，支持
+  `{param}` 插值）；`i18n.applyDom(root)` 把所有 `data-i18n="key"` / `data-i18n-attr` 元素
+  替换成译文；语言变化时自动重新加载对应字串表、重新 `applyDom()`，并触发
+  `i18n.onChange(fn)`（用了前端框架、需要重新渲染而不是直接改 DOM 的工具用这个）。
+- 完全是可选脚手架，不是强制约定——想用 vue-i18n / react-intl 之类，删掉这个文件，直接按
+  自己的技术栈接 `bridge.locale`/`bridge.onLocaleChange` 即可。
+- 完整设计见 `mybooks/mybooks` 仓库 `document/Toolbox_Dynamic_Design.md` 4.5/4.6 节。
 
 ## 明确不做的事（当前版本）
 

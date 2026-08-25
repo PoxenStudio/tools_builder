@@ -97,6 +97,13 @@ test('init -> validate -> build -> validate(zip) end to end', async () => {
   assert.equal(manifest.tool_id, 'demo_tool');
   assert.equal(manifest.entry_backend, 'tool.DemoTool');
   assert.equal(manifest.repo_url, 'https://example.com/demo_tool');
+  assert.deepEqual(manifest.locales, ['en', 'zh']);
+  assert.equal(manifest.default_locale, 'en');
+
+  const localesManifest = JSON.parse(
+    fs.readFileSync(path.join(outDir, 'frontend', 'locales', 'manifest.json'), 'utf-8')
+  );
+  assert.deepEqual(localesManifest, { default: 'en', locales: ['en', 'zh'] });
 
   const toolSrc = fs.readFileSync(path.join(outDir, 'backend', 'tool.py'), 'utf-8');
   assert.match(toolSrc, /class DemoTool\(BaseTool\):/);
@@ -116,6 +123,12 @@ test('init -> validate -> build -> validate(zip) end to end', async () => {
     'backend/__init__.py',
     'backend/tool.py',
     'frontend/index.html',
+    'frontend/lib/',
+    'frontend/lib/i18n.js',
+    'frontend/locales/',
+    'frontend/locales/en.json',
+    'frontend/locales/manifest.json',
+    'frontend/locales/zh.json',
     'manifest.json',
   ]);
 

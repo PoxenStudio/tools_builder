@@ -1,0 +1,7 @@
+{
+  "status.loading": "加载中...",
+  "status.ready": "已就绪（主题：{theme}）",
+  "action.run": "运行",
+  "result.success": "运行完成",
+  "result.error": "运行失败：{error}"
+}

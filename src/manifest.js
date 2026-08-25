@@ -74,6 +74,13 @@ function validateManifestObject(manifest) {
     }
   }
 
+  if (manifest.locales !== undefined && !Array.isArray(manifest.locales)) {
+    errors.push('locales 必须是数组（语言代码列表），例如 ["en", "zh"]');
+  }
+  if (manifest.default_locale && Array.isArray(manifest.locales) && !manifest.locales.includes(manifest.default_locale)) {
+    errors.push(`default_locale "${manifest.default_locale}" 不在 locales 列表里`);
+  }
+
   if (!manifest.entry_frontend) {
     warnings.push('未声明 entry_frontend，工具将没有前端页面（iframe 会加载失败）');
   }

@@ -1,0 +1,7 @@
+{
+  "status.loading": "Loading...",
+  "status.ready": "Ready (theme: {theme})",
+  "action.run": "Run",
+  "result.success": "Run finished",
+  "result.error": "Run failed: {error}"
+}

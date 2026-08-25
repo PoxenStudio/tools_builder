@@ -1,0 +1,4 @@
+{
+  "default": "{{I18N_DEFAULT_LOCALE}}",
+  "locales": {{I18N_LOCALES_JSON}}
+}

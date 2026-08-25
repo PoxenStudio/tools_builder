@@ -10,6 +10,8 @@
   "entry_frontend": "index.html",
   "page": "{{TOOL_ID}}",
   "repo_url": "{{REPO_URL}}",
+  "locales": {{I18N_LOCALES_JSON}},
+  "default_locale": "{{I18N_DEFAULT_LOCALE}}",
   "api_routes": [
     { "path": "run", "handler": "tool.RunHandler" }
   ]

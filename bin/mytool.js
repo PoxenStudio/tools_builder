@@ -23,6 +23,7 @@ program
   .option('-a, --author <author>', '作者')
   .option('-d, --description <description>', '工具描述')
   .option('-r, --repo-url <url>', '源码仓库地址（repo_url，必填，商店审核用）')
+  .option('-l, --locales <codes>', '支持的语言，逗号分隔，如 en,zh（见 4.6 节 i18n 方案），默认 en,zh')
   .option('-o, --outdir <dir>', '生成到哪个目录，默认为当前目录下的 <tool_id>')
   .action(async (toolId, options) => {
     await runInit(toolId, options);
