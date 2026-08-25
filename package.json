@@ -1,6 +1,6 @@
 {
   "name": "mybooks-tools-builder",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Scaffold / build / validate CLI for MyBooks Toolbox external tools (mytool). MyBooks is a personal e-books management system base on calibre.",
   "license": "MIT",
   "author": "PoxenStudio",
