@@ -1,6 +1,6 @@
 # {{NAME}}
 
-一个 MyBooks Toolbox 外部插件，由 `mytool init` 生成。
+一个 MyBooks Toolbox 外部工具，由 `mytool init` 生成。
 
 ## 目录结构
 
@@ -27,7 +27,7 @@
 3. `mytool build` —— 打包成 `dist/{{TOOL_ID}}-<revision>.zip`，会打印 sha256。
 4. 在一个开启了"开发者模式"（`ENABLE_TOOLBOX_DEV_MODE`）的 MyBooks 实例的
    `/admin/toolbox` 页面里，把这个 zip 上传安装，重启 MyBooks 进程后生效，然后在
-   `/toolbox/plugin/{{TOOL_ID}}` 里实际跑起来。
+   `/toolbox/{{TOOL_ID}}` 里实际跑起来。
 
 ## manifest.json 字段说明
 

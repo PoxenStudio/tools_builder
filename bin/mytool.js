@@ -13,12 +13,12 @@ const program = new Command();
 
 program
   .name('mytool')
-  .description('MyBooks Toolbox 外部插件脚手架 / 构建 / 校验 CLI\n\n设计文档: mybooks/mybooks 仓库 document/Toolbox_Dynamic_Design.md 第 4.2.1 节')
+  .description('MyBooks Toolbox 外部工具脚手架 / 构建 / 校验 CLI\n\n设计文档: mybooks/mybooks 仓库 document/Toolbox_Dynamic_Design.md 第 4.2.1 节')
   .version(pkg.version);
 
 program
   .command('init <tool_id>')
-  .description('生成一个新的插件项目骨架')
+  .description('生成一个新的工具项目骨架')
   .option('-n, --name <name>', '工具展示名称')
   .option('-a, --author <author>', '作者')
   .option('-d, --description <description>', '工具描述')

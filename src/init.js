@@ -89,7 +89,7 @@ async function runInit(toolId, options) {
     console.warn('⚠ 没有填 repo_url —— manifest.json 里这项是必填字段，build/validate 会报错，记得补上');
   }
 
-  console.log(`✔ 已生成插件骨架：${outDir}`);
+  console.log(`✔ 已生成工具骨架：${outDir}`);
   console.log('  下一步：');
   console.log(`    cd ${path.relative(process.cwd(), outDir) || '.'}`);
   console.log('    mytool validate .');

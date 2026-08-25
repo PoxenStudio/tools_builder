@@ -1,11 +1,16 @@
 # Tools Builder (`mytool`)
 
-MyBooks Toolbox 外部插件的脚手架 / 构建 / 校验 CLI。
+MyBooks Toolbox 外部工具的脚手架 / 构建 / 校验 CLI。
 
-设计背景：MyBooks（`mybooks/mybooks` 仓库）的 Toolbox 支持以"外部插件"的形式动态安装工具，
+设计背景：MyBooks（`mybooks/mybooks` 仓库）的 Toolbox 支持以"外部工具"的形式动态安装工具，
 不需要改动核心仓库代码就能新增功能。
 
 工具作者也可以完全不用这个脚手架——只要产物符合"一个 `manifest.json` + `backend/` + `frontend/`"的约定即可（见下方"包结构"）。
+
+📖 **完整 Core API / `toolbox-bridge.js` 参考文档**：
+[poxenstudio.github.io/tools_builder](https://poxenstudio.github.io/tools_builder/)
+（本仓库 `docs/index.html`，随 GitHub Pages 发布，内容如何与 `mybooks/mybooks` 保持同步见
+`.claude/skills/sync-tool-api-docs/SKILL.md`）。
 
 ## 安装
 
@@ -18,24 +23,24 @@ npx mybooks-tools-builder --help
 ## 快速开始
 
 ```bash
-mytool init my_tool \
+mytool init tool_name \
   --name "我的工具" \
   --author "你的名字" \
   --description "工具做什么" \
-  --repo-url "https://github.com/you/my_tool"
+  --repo-url "https://github.com/you/tool_name"
 
-cd my_tool
+cd tool_name
 # 改 backend/tool.py 和 frontend/index.html，写你的业务逻辑
 
 mytool validate .      # 打包前先校验一遍
-mytool build            # 产出 dist/my_tool-0.1.0.zip，打印 sha256
+mytool build            # 产出 dist/tool_name-0.1.0.zip，打印 sha256
 ```
 
 打包出来的 zip：
 
 - 在一个开启了"开发者模式"（管理员在系统设置里打开 `ENABLE_TOOLBOX_DEV_MODE`）的 MyBooks
   实例的 `/admin/toolbox` 页面里上传安装（`POST /api/toolbox/install/upload`）；
-- 或者提交给MyBooks审核发布（连同 `build` 打印的 sha256）。
+- 或者发送邮件提交给MyBooks审核发布（注明代码仓库地址，以及 `build` 打印的 sha256）。
 
 安装后需要**重启MyBooks**才会真正生效。之后管理员可以随时对它做禁用/启用（立即生效，不需要重启）或卸载。
 
@@ -43,7 +48,7 @@ mytool build            # 产出 dist/my_tool-0.1.0.zip，打印 sha256
 
 | 命令 | 作用 |
 |---|---|
-| `mytool init <tool_id>` | 生成一个新的插件项目骨架 |
+| `mytool init <tool_id>` | 生成一个新的工具项目骨架 |
 | `mytool validate <path>` | 只做校验，不打包；`path` 可以是项目目录，也可以是已有的 zip |
 | `mytool build [dir]` | 校验并打包成 `dist/<tool_id>-<revision>.zip`，打印 sha256 |
 | `mytool bump <major\|minor\|patch> [dir]` | 按 semver 规则升级 `manifest.json` 里的 `revision` |
@@ -54,7 +59,7 @@ mytool build            # 产出 dist/my_tool-0.1.0.zip，打印 sha256
 ## 包结构
 
 ```
-my_tool/
+tool_name/
 ├── manifest.json         # 工具元数据，见下方字段说明
 ├── .toolbuilder.json      # 构建配置：前端如果用自己的打包工具，在这里声明命令和产物目录
 ├── icon.png                # 可选，工具图标
@@ -122,7 +127,7 @@ MyBooks 实例。
 `window.MyBooksToolBridge`：
 
 - `bridge.theme` / `bridge.locale` —— 当前宿主的主题（`"light"`/`"dark"`）与语言
-- `bridge.fetch(path, options)` —— 请求 `/api/toolbox/plugin/{tool_id}/{path}`，Cookie
+- `bridge.fetch(path, options)` —— 请求 `/api/toolbox/tool/{tool_id}/{path}`，Cookie
   自动带上，不需要额外处理鉴权
 - `bridge.notify(message, level)` —— 请求宿主用它自己的提示组件展示一条消息
 

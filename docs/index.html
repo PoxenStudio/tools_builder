@@ -1,0 +1,714 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>MyBooks Toolbox Core API</title>
+<meta name="description" content="MyBooks Toolbox 工具可用的 Core API / toolbox-bridge.js 参考文档" />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧰</text></svg>" />
+<style>
+  :root {
+    --bg: #f6f7f9;
+    --bg-elevated: #ffffff;
+    --text: #1a1d23;
+    --text-muted: #5b6270;
+    --border: #e2e5ea;
+    --accent: #2f6fed;
+    --accent-soft: #eaf1ff;
+    --code-bg: #f0f2f6;
+    --code-text: #24292f;
+    --tag-bg: #eef0f4;
+    --warn-bg: #fff6e5;
+    --warn-border: #f0c766;
+    --shadow: 0 1px 2px rgba(20, 24, 33, 0.06), 0 6px 20px rgba(20, 24, 33, 0.05);
+  }
+  :root[data-theme="dark"] {
+    --bg: #14161b;
+    --bg-elevated: #1c1f26;
+    --text: #e7e9ee;
+    --text-muted: #9aa1b0;
+    --border: #2a2e37;
+    --accent: #6d9bff;
+    --accent-soft: #1c2740;
+    --code-bg: #11141a;
+    --code-text: #d7dbe4;
+    --tag-bg: #23262e;
+    --warn-bg: #3a2f10;
+    --warn-border: #9a7a1f;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 8px 24px rgba(0, 0, 0, 0.35);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #14161b;
+      --bg-elevated: #1c1f26;
+      --text: #e7e9ee;
+      --text-muted: #9aa1b0;
+      --border: #2a2e37;
+      --accent: #6d9bff;
+      --accent-soft: #1c2740;
+      --code-bg: #11141a;
+      --code-text: #d7dbe4;
+      --tag-bg: #23262e;
+      --warn-bg: #3a2f10;
+      --warn-border: #9a7a1f;
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 8px 24px rgba(0, 0, 0, 0.35);
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+    line-height: 1.65;
+  }
+  a { color: var(--accent); }
+  code, pre {
+    font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  }
+  code {
+    background: var(--code-bg);
+    color: var(--code-text);
+    padding: 0.12em 0.4em;
+    border-radius: 4px;
+    font-size: 0.9em;
+  }
+  pre {
+    background: var(--code-bg);
+    color: var(--code-text);
+    padding: 14px 16px;
+    border-radius: 10px;
+    overflow-x: auto;
+    font-size: 0.86em;
+    border: 1px solid var(--border);
+  }
+  pre code { background: none; padding: 0; border-radius: 0; }
+
+  .topbar {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: color-mix(in srgb, var(--bg) 88%, transparent);
+    backdrop-filter: saturate(180%) blur(10px);
+    border-bottom: 1px solid var(--border);
+  }
+  .topbar-inner {
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 12px 20px;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+  }
+  .brand { font-weight: 700; font-size: 15px; white-space: nowrap; }
+  .brand .ver { color: var(--text-muted); font-weight: 400; }
+  nav.toc { display: flex; gap: 14px; flex-wrap: wrap; font-size: 13.5px; }
+  nav.toc a { color: var(--text-muted); text-decoration: none; }
+  nav.toc a:hover { color: var(--accent); }
+  .spacer { flex: 1; }
+  #theme-toggle {
+    border: 1px solid var(--border);
+    background: var(--bg-elevated);
+    color: var(--text);
+    border-radius: 8px;
+    padding: 5px 10px;
+    font-size: 13px;
+    cursor: pointer;
+  }
+
+  main { max-width: 980px; margin: 0 auto; padding: 40px 20px 80px; }
+  header.hero { padding: 8px 0 28px; border-bottom: 1px solid var(--border); margin-bottom: 32px; }
+  header.hero h1 { font-size: 30px; margin: 0 0 10px; }
+  header.hero p.lead { color: var(--text-muted); font-size: 16px; max-width: 68ch; margin: 0 0 14px; }
+  .badges { display: flex; gap: 8px; flex-wrap: wrap; }
+  .badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--tag-bg); color: var(--text-muted);
+    border: 1px solid var(--border); border-radius: 999px;
+    padding: 3px 10px; font-size: 12.5px;
+  }
+
+  section { margin: 48px 0; }
+  section h2 {
+    font-size: 21px; margin: 0 0 6px;
+    padding-bottom: 10px; border-bottom: 1px solid var(--border);
+    scroll-margin-top: 70px;
+  }
+  section h2 .anchor { color: var(--text-muted); font-weight: 400; font-size: 14px; margin-left: 8px; }
+  section > p.desc { color: var(--text-muted); margin: 14px 0 20px; }
+  h3.ns {
+    font-size: 16px; margin: 28px 0 4px;
+    display: flex; align-items: center; gap: 8px;
+    scroll-margin-top: 70px;
+  }
+  h3.ns .ns-tag {
+    font-family: ui-monospace, monospace; font-size: 13px;
+    background: var(--accent-soft); color: var(--accent);
+    padding: 2px 8px; border-radius: 6px;
+  }
+  p.ns-desc { color: var(--text-muted); margin: 2px 0 12px; font-size: 14px; }
+
+  .method {
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin: 10px 0;
+    box-shadow: var(--shadow);
+  }
+  .method summary {
+    cursor: pointer;
+    list-style: none;
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .method summary::-webkit-details-marker { display: none; }
+  .method summary .sig {
+    font-family: ui-monospace, monospace;
+    font-size: 14.5px;
+    font-weight: 600;
+  }
+  .method summary .sig .ns-prefix { color: var(--text-muted); font-weight: 400; }
+  .method summary .one-line {
+    color: var(--text-muted);
+    font-size: 13.5px;
+    font-weight: 400;
+  }
+  .method summary::before {
+    content: "▸";
+    color: var(--text-muted);
+    font-size: 12px;
+    transition: transform 0.15s;
+  }
+  .method[open] summary::before { transform: rotate(90deg); }
+  .method .body { margin-top: 12px; font-size: 14px; }
+  .method .body p { margin: 6px 0; }
+  table.params { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 13.5px; }
+  table.params th, table.params td {
+    text-align: left; padding: 6px 10px; border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  table.params th { color: var(--text-muted); font-weight: 500; }
+  table.params td code { white-space: nowrap; }
+
+  .note {
+    background: var(--accent-soft);
+    border: 1px solid color-mix(in srgb, var(--accent) 35%, var(--border));
+    border-radius: 10px;
+    padding: 12px 16px;
+    font-size: 14px;
+    margin: 14px 0;
+  }
+  .warn {
+    background: var(--warn-bg);
+    border: 1px solid var(--warn-border);
+    border-radius: 10px;
+    padding: 12px 16px;
+    font-size: 14px;
+    margin: 14px 0;
+  }
+
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 760px) { .grid-2 { grid-template-columns: 1fr; } }
+
+  footer {
+    max-width: 980px; margin: 0 auto; padding: 24px 20px 60px;
+    color: var(--text-muted); font-size: 13px; border-top: 1px solid var(--border);
+  }
+  footer a { color: var(--text-muted); }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">🧰 MyBooks Toolbox <span class="ver">Core API</span></div>
+    <nav class="toc">
+      <a href="#core-api">Core API</a>
+      <a href="#bridge">toolbox-bridge.js</a>
+      <a href="#theme-locale">主题 / 语言联动</a>
+      <a href="#manifest">manifest.json</a>
+      <a href="#cli">mytool CLI</a>
+    </nav>
+    <div class="spacer"></div>
+    <button id="theme-toggle" type="button" aria-label="切换主题">🌓 主题</button>
+  </div>
+</div>
+
+<main>
+  <header class="hero">
+    <h1>MyBooks Toolbox Core API</h1>
+    <p class="lead">
+      给 MyBooks Toolbox 工具（内置工具与外部工具）用的后端 API（<code>self.api.*</code>）和
+      前端桥接脚本（<code>toolbox-bridge.js</code>）参考文档。设计背景见
+      <a href="https://github.com/PoxenStudio/mybooks/blob/develop/document/Toolbox_Dynamic_Design.md" target="_blank" rel="noopener">
+        mybooks/mybooks · document/Toolbox_Dynamic_Design.md
+      </a>，脚手架 CLI 见本仓库
+      <a href="https://github.com/PoxenStudio/tools_builder" target="_blank" rel="noopener">README</a>。
+    </p>
+    <div class="badges">
+      <span class="badge">Core API <code>1.0.0</code></span>
+      <span class="badge">CLI 命令 <code>mytool</code></span>
+      <span class="badge">类型 <code>builtin</code> / <code>tool</code></span>
+      <span class="badge" id="sync-badge">同步自 mybooks/mybooks · 见页尾</span>
+    </div>
+  </header>
+
+  <div class="note">
+    <strong>怎么用这份文档</strong>：工具的 <code>backend/tool.py</code> 里，工具类继承
+    <code>BaseTool</code>，运行时可以通过 <code>self.api</code> 访问下面这些方法；工具的
+    <code>frontend/index.html</code> 里，引入 <code>&lt;script src="/static/toolbox-bridge.js"&gt;</code>
+    后可以用 <code>window.MyBooksToolBridge</code>。两者都由宿主 MyBooks 在运行时注入，
+    脚手架生成的项目模板里已经各给了一个最小可用的调用示例。
+  </div>
+
+  <!-- ============================== Core API ============================== -->
+  <section id="core-api">
+    <h2>后端：Core API <span class="anchor">#core-api</span></h2>
+    <p class="desc">
+      挂在 <code>self.api</code> 上，按命名空间划分：<code>calibre</code> / <code>db</code> /
+      <code>tasks</code> / <code>messages</code> / <code>storage</code>。所有方法都是同步调用，
+      工具作者不需要关心背后是 Calibre 的 <code>legacy</code> DB、<code>new_api</code>，
+      还是应用自己的 SQLAlchemy session——这层解耦正是 Core API 存在的意义，接口本身按
+      语义化版本演进（manifest.json 的 <code>core_api_version</code> 声明兼容的最低版本）。
+    </p>
+
+    <h3 class="ns"><span class="ns-tag">self.api.calibre</span> Calibre 书库读写</h3>
+    <p class="ns-desc">查询、导入、修改书籍元数据与格式文件。</p>
+
+    <details class="method">
+      <summary><span class="sig"><span class="ns-prefix">calibre.</span>search_books(query, max_results=20)</span>
+        <span class="one-line">→ list[dict]</span></summary>
+      <div class="body">
+        <p>按 Calibre 搜索语法查询书籍，返回 dict 列表（含 <code>id</code>/<code>title</code>/<code>authors</code>/<code>available_formats</code> 等字段）。</p>
+        <table class="params">
+          <tr><th>参数</th><th>类型</th><th>说明</th></tr>
+          <tr><td><code>query</code></td><td>str</td><td>Calibre 搜索表达式，如 <code>authors:="张三"</code></td></tr>
+          <tr><td><code>max_results</code></td><td>int</td><td>最多返回条数，默认 20</td></tr>
+        </table>
+      </div>
+    </details>
+
+    <details class="method">
+      <summary><span class="sig"><span class="ns-prefix">calibre.</span>search_ids(query)</span>
+        <span class="one-line">→ list[int]</span></summary>
+      <div class="body"><p>同上，但只返回排序后的 <code>book_id</code> 列表，不取详情，适合只需要遍历 id 的场景（比全量取详情快）。</p></div>
+    </details>
+
+    <details class="method">
+      <summary><span class="sig"><span class="ns-prefix">calibre.</span>get_metadata(book_id, get_cover=False, cover_as_data=False)</span>
+        <span class="one-line">→ Metadata</span></summary>
+      <div class="body">
+        <p>返回指定书籍的 Calibre <code>Metadata</code> 对象。</p>
+        <table class="params">
+          <tr><th>参数</th><th>类型</th><th>说明</th></tr>
+          <tr><td><code>book_id</code></td><td>int</td><td>Calibre 书籍 ID</td></tr>
+          <tr><td><code>get_cover</code></td><td>bool</td><td>是否附带封面（写入磁盘临时文件路径），默认 False</td></tr>
+          <tr><td><code>cover_as_data</code></td><td>bool</td><td>封面以内存字节形式附带（配合 <code>get_cover</code>），默认 False</td></tr>
+        </table>
+      </div>
+    </details>
+
+    <details class="method">
+      <summary><span class="sig"><span class="ns-prefix">calibre.</span>set_metadata(book_id, mi, force_changes=True)</span>
+        <span class="one-line">→ None</span></summary>
+      <div class="body"><p>写回书籍元数据；<code>mi</code> 是一个 <code>Metadata</code> 对象（可以从 <code>get_metadata</code> 拿到后原地修改再传回）。</p></div>
+    </details>
+
+    <details class="method">
+      <summary><span class="sig"><span class="ns-prefix">calibre.</span>get_data_as_dict(ids)</span>
+        <span class="one-line">→ list[dict]</span></summary>
+      <div class="body"><p>按 <code>book_id</code> 列表批量返回书籍 dict（含 <code>available_formats</code>/<code>title</code> 等字段），比逐个 <code>get_metadata</code> 更省调用次数。</p></div>
+    </details>
+
+    <details class="method">
+      <summary><span class="sig"><span class="ns-prefix">calibre.</span>cover(book_id)</span>
+        <span class="one-line">→ bytes | None</span></summary>
+      <div class="body"><p>返回书籍封面的原始字节，没有封面时返回 <code>None</code>。</p></div>
+    </details>
+
+    <details class="method">
+      <summary><span class="sig"><span class="ns-prefix">calibre.</span>import_book(mi, formats)</span>
+        <span class="one-line">→ int | None</span></summary>
+      <div class="body">
+        <p>将本地格式文件与给定元数据一并入库，返回新书的 <code>book_id</code>。</p>
+        <table class="params">
+          <tr><th>参数</th><th>类型</th><th>说明</th></tr>
+          <tr><td><code>mi</code></td><td>Metadata</td><td>要写入的元数据对象</td></tr>
+          <tr><td><code>formats</code></td><td>list[str]</td><td>本地文件绝对路径列表（如 <code>["/tmp/x.epub"]</code>）</td></tr>
+        </table>
+      </div>
+    </details>
+
+    <details class="method">
+      <summary><span class="sig"><span class="ns-prefix">calibre.</span>import_file(user_id, file_path, title, authors, *, delete_after_import=True)</span>
+        <span class="one-line">→ int</span></summary>
+      <div class="body"><p>比 <code>import_book</code> 更高一层：从文件本身读取元数据兜底、清洗标题/作者、创建 <code>Item</code>
+        采集记录、可选删除源文件，是"下载后入库"这类场景的推荐入口（<code>rare_book_downloader</code> 等工具在用）。</p></div>
+    </details>
+
+    <details class="method">
+      <summary><span class="sig"><span class="ns-prefix">calibre.</span>merge_formats(source_book_id, target_book_id)</span>
+        <span class="one-line">→ list[str]</span></summary>
+      <div class="body"><p>把 <code>source_book_id</code> 书籍里 <code>target_book_id</code> 尚不具备的格式复制过去，返回新增的格式名列表（大写）。不会删除来源书籍。</p></div>
+    </details>
+
+    <details class="method">
+      <summary><span class="sig"><span class="ns-prefix">calibre.</span>add_format(book_id, fmt, file_path)</span>
+        <span class="one-line">→ None</span></summary>
+      <div class="body"><p>给书籍添加/替换一个格式文件；<code>file_path</code> 可以是磁盘路径字符串，也可以是已打开的文件对象。</p></div>
+    </details>
+
+    <details class="method">
+      <summary><span class="sig"><span class="ns-prefix">calibre.</span>format_abspath(book_id, fmt)</span>
+        <span class="one-line">→ str | None</span></summary>
+      <div class="body"><p>返回指定格式文件在磁盘上的绝对路径；文件不存在时返回 <code>None</code>。</p></div>
+    </details>
+
+    <details class="method">
+      <summary><span class="sig"><span class="ns-prefix">calibre.</span>get_custom(book_id, label)</span>
+        <span class="one-line">→ any</span></summary>
+      <div class="body"><p>读取自定义列（Calibre 里以 <code>#</code> 开头的列，这里传不带 <code>#</code> 的 label）的值。</p></div>
+    </details>
+
+    <details class="method">
+      <summary><span class="sig"><span class="ns-prefix">calibre.</span>set_custom(label, values)</span>
+        <span class="one-line">→ None</span></summary>
+      <div class="body"><p>批量写入自定义列的值，<code>values</code> 为 <code>{book_id: value}</code> 形式的字典（一次调用可以写多本书）。</p></div>
+    </details>
+
+    <details class="method">
+      <summary><span class="sig"><span class="ns-prefix">calibre.</span>remove_formats(values)</span>
+        <span class="one-line">→ None</span></summary>
+      <div class="body"><p>批量删除格式文件，<code>values</code> 为 <code>{book_id: [fmt, ...]}</code>。</p></div>
+    </details>
+
+    <details class="method">
+      <summary><span class="sig"><span class="ns-prefix">calibre.</span>set_language(book_id, language)</span>
+        <span class="one-line">→ None</span></summary>
+      <div class="body"><p>把书籍的语言字段更新为给定语言代码（如 <code>"zh"</code>/<code>"zht"</code>/<code>"en"</code>）。</p></div>
+    </details>
+
+    <details class="method">
+      <summary><span class="sig"><span class="ns-prefix">calibre.</span>all_book_ids()</span>
+        <span class="one-line">→ list[int]</span></summary>
+      <div class="body"><p>返回书库中所有书籍的 ID 列表（已排序）。批量扫描类工具（格式精简、语言检测等）常用这个做遍历入口。</p></div>
+    </details>
+
+    <details class="method">
+      <summary><span class="sig"><span class="ns-prefix">calibre.</span>delete_book(book_id)</span>
+        <span class="one-line">→ None</span></summary>
+      <div class="body"><p>从 Calibre 书库及应用自己的 <code>Item</code> 表中一并删除指定书籍，不可撤销，请在有明确用户确认的操作里使用。</p></div>
+    </details>
+
+    <h3 class="ns"><span class="ns-tag">self.api.db</span> 应用数据库</h3>
+    <p class="ns-desc">读写应用自己的 SQLAlchemy 模型（<code>Reader</code> / <code>Item</code>），不暴露裸的 Session 或 ORM 对象——全部返回/接收 plain dict，避免工具持有脱离 session 生命周期的实例。</p>
+
+    <details class="method">
+      <summary><span class="sig"><span class="ns-prefix">db.</span>get_item_by_book_id(book_id)</span>
+        <span class="one-line">→ dict | None</span></summary>
+      <div class="body"><p>返回 <code>{"id", "book_id", "collector_id"}</code>；书籍没有采集记录时返回 <code>None</code>。</p></div>
+    </details>
+
+    <details class="method">
+      <summary><span class="sig"><span class="ns-prefix">db.</span>create_item(book_id, collector_id)</span>
+        <span class="one-line">→ dict</span></summary>
+      <div class="body"><p>创建一条采集记录，返回同上格式的 dict。</p></div>
+    </details>
+
+    <details class="method">
+      <summary><span class="sig"><span class="ns-prefix">db.</span>delete_item_by_book_id(book_id)</span>
+        <span class="one-line">→ None</span></summary>
+      <div class="body"><p>删除该书籍的采集记录（存在才删，不存在直接忽略）。</p></div>
+    </details>
+
+    <details class="method">
+      <summary><span class="sig"><span class="ns-prefix">db.</span>get_reader(user_id)</span>
+        <span class="one-line">→ dict | None</span></summary>
+      <div class="body"><p>返回 <code>{"id", "username", "name", "admin"}</code>；用户不存在时返回 <code>None</code>。</p></div>
+    </details>
+
+    <h3 class="ns"><span class="ns-tag">self.api.tasks</span> 后台任务</h3>
+    <p class="ns-desc">耗时操作（下载、格式转换、批量扫描等）应该跑成后台任务，让用户能在任务面板看到进度，而不是让 HTTP 请求一直挂起。</p>
+
+    <details class="method">
+      <summary><span class="sig"><span class="ns-prefix">tasks.</span>create_task(progress_data=None)</span>
+        <span class="one-line">→ int</span></summary>
+      <div class="body"><p>创建一个后台任务，返回 <code>task_id</code>。任务名称取自工具类的 <code>service_item_name</code> 属性；后台任务面板里该工具的 <code>service_type</code> 自动带 <code>"tool:&lt;tool_id&gt;"</code> 前缀，与内置工具区分展示。</p></div>
+    </details>
+
+    <details class="method">
+      <summary><span class="sig"><span class="ns-prefix">tasks.</span>update_progress(task_id, progress, progress_data=None)</span>
+        <span class="one-line">→ None</span></summary>
+      <div class="body"><p>更新任务进度，<code>progress</code> 为 0–100 的整数。</p></div>
+    </details>
+
+    <details class="method">
+      <summary><span class="sig"><span class="ns-prefix">tasks.</span>complete_task(task_id, error_message=None)</span>
+        <span class="one-line">→ None</span></summary>
+      <div class="body"><p>标记任务完成；传 <code>error_message</code> 则标记为失败并附带错误描述。</p></div>
+    </details>
+
+    <details class="method">
+      <summary><span class="sig"><span class="ns-prefix">tasks.</span>make_progress_callback(task_id, progress_data_factory=None, outer_callback=None)</span>
+        <span class="one-line">→ callable</span></summary>
+      <div class="body"><p>构造一个 <code>(progress: int) -&gt; None</code> 的回调函数，消除手写进度回调时重复的样板代码；常见于给下载器/转换器传 <code>callback=</code> 参数。</p></div>
+    </details>
+
+    <h3 class="ns"><span class="ns-tag">self.api.messages</span> 站内消息</h3>
+    <p class="ns-desc">给用户发一条持久化的站内通知，独立于任务面板（例如任务已经 complete，但还想额外提示一句"已生成新书，可在书库中查看"）。</p>
+
+    <details class="method">
+      <summary><span class="sig"><span class="ns-prefix">messages.</span>send_message(user_id, msg, status="info")</span>
+        <span class="one-line">→ None</span></summary>
+      <div class="body">
+        <table class="params">
+          <tr><th>参数</th><th>类型</th><th>说明</th></tr>
+          <tr><td><code>user_id</code></td><td>int</td><td>接收用户 ID</td></tr>
+          <tr><td><code>msg</code></td><td>str</td><td>消息内容</td></tr>
+          <tr><td><code>status</code></td><td>str</td><td><code>"info"</code> / <code>"success"</code> / <code>"warning"</code> / <code>"danger"</code>，决定前端展示的样式</td></tr>
+        </table>
+      </div>
+    </details>
+
+    <details class="method">
+      <summary><span class="sig"><span class="ns-prefix">messages.</span>cleanup_messages(user_id, msg_content, days=31)</span>
+        <span class="one-line">→ int</span></summary>
+      <div class="body"><p>清理该用户内容重复或超过 <code>days</code> 天未读的消息，返回清理条数。<code>send_message</code> 内部已经会做一次同内容去重，一般不需要单独调用。</p></div>
+    </details>
+
+    <h3 class="ns"><span class="ns-tag">self.api.storage</span> 工具专属存储</h3>
+    <p class="ns-desc">每个工具都有自己独立的数据目录，路径由 <code>tool_id</code> 派生，不同工具之间互不干扰。</p>
+
+    <details class="method">
+      <summary><span class="sig"><span class="ns-prefix">storage.</span>get_work_dir(unique_key=None)</span>
+        <span class="one-line">→ str</span></summary>
+      <div class="body"><p>返回并创建一个工作目录的绝对路径。传 <code>unique_key</code>（如任务参数、URL）时按其哈希生成独立子目录，适合"每次调用一个临时目录"的场景；不传则返回该工具的共享目录。</p></div>
+    </details>
+
+    <details class="method">
+      <summary><span class="sig"><span class="ns-prefix">storage.</span>cleanup_work_dir(work_dir)</span>
+        <span class="one-line">→ None</span></summary>
+      <div class="body"><p>递归删除工作目录；失败只记录警告，不向上抛异常（避免因为清理失败影响主流程的成功状态）。</p></div>
+    </details>
+
+    <details class="method">
+      <summary><span class="sig"><span class="ns-prefix">storage.</span>get_config()</span>
+        <span class="one-line">→ dict</span></summary>
+      <div class="body"><p>读取该工具的持久化配置（JSON 文件），文件不存在或解析失败时返回 <code>{}</code>，不抛异常。</p></div>
+    </details>
+
+    <details class="method">
+      <summary><span class="sig"><span class="ns-prefix">storage.</span>set_config(data)</span>
+        <span class="one-line">→ None</span></summary>
+      <div class="body"><p>把 <code>data</code>（dict）写入该工具的持久化配置文件；适合保存 API Key、用户偏好这类"重启也要记住"的设置。写入失败会抛 <code>RuntimeError</code>。</p></div>
+    </details>
+
+    <div class="warn">
+      <strong>没有开放的能力</strong>：Core API 不提供任意 SQL / ORM 查询的"逃生舱"——只暴露具名方法。
+      如果你的工具需要一个这里没有的能力，说明这是一个值得补充到 Core API 的通用需求，请在
+      <a href="https://github.com/PoxenStudio/mybooks" target="_blank" rel="noopener">mybooks/mybooks</a>
+      开 issue，而不是绕过 <code>self.api</code> 直接碰 Calibre/SQLAlchemy 内部对象——那样会在
+      MyBooks 升级时随时被破坏，且商店审核也不会通过。
+    </div>
+  </section>
+
+  <!-- ============================== bridge ============================== -->
+  <section id="bridge">
+    <h2>前端：toolbox-bridge.js <span class="anchor">#bridge</span></h2>
+    <p class="desc">
+      工具前端是一份自包含的静态站点，由宿主 MyBooks 用 <code>&lt;iframe&gt;</code> 加载，不要求用 Vue、
+      不要求和宿主的前端框架版本一致。在 <code>index.html</code> 里引入：
+    </p>
+    <pre><code>&lt;script src="/static/toolbox-bridge.js"&gt;&lt;/script&gt;</code></pre>
+    <p>之后即可使用全局对象 <code>window.MyBooksToolBridge</code>：</p>
+
+    <details class="method">
+      <summary><span class="sig">bridge.toolId</span> <span class="one-line">string</span></summary>
+      <div class="body"><p>当前工具的 <code>tool_id</code>，从页面自身 URL（<code>/get/tool/{tool_id}/index.html</code>）解析得到。</p></div>
+    </details>
+
+    <details class="method">
+      <summary><span class="sig">bridge.theme</span> <span class="one-line">"light" | "dark"</span></summary>
+      <div class="body"><p>宿主当前主题。详见下方 <a href="#theme-locale">主题 / 语言联动</a>。</p></div>
+    </details>
+
+    <details class="method">
+      <summary><span class="sig">bridge.locale</span> <span class="one-line">string</span></summary>
+      <div class="body"><p>宿主当前语言（如 <code>"zh"</code> / <code>"zh-TW"</code> / <code>"en"</code>）。详见下方 <a href="#theme-locale">主题 / 语言联动</a>。</p></div>
+    </details>
+
+    <details class="method" open>
+      <summary><span class="sig">bridge.fetch(path, options)</span> <span class="one-line">→ Promise&lt;any&gt;</span></summary>
+      <div class="body">
+        <p>对 <code>/api/toolbox/tool/{tool_id}/{path}</code> 的 <code>fetch</code> 简单封装——这个路径对应
+          <code>manifest.json</code> 里 <code>api_routes</code> 声明的自定义接口（见下方 manifest 章节）。
+          iframe 与宿主同源，Cookie 天然带上，不需要额外处理鉴权；响应按 <code>Content-Type</code>
+          自动解析成 JSON 或文本。</p>
+        <table class="params">
+          <tr><th>参数</th><th>类型</th><th>说明</th></tr>
+          <tr><td><code>path</code></td><td>str</td><td>相对路径（不需要带前导 <code>/</code>），例如 <code>"run"</code></td></tr>
+          <tr><td><code>options</code></td><td>RequestInit</td><td>透传给 <code>fetch</code> 的选项，可选</td></tr>
+        </table>
+        <pre><code>const rsp = await MyBooksToolBridge.fetch('run', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ book_id: 42 }),
+});</code></pre>
+      </div>
+    </details>
+
+    <details class="method">
+      <summary><span class="sig">bridge.notify(message, level)</span> <span class="one-line">→ void</span></summary>
+      <div class="body">
+        <p>请求宿主用它自己的提示组件（Vuetify <code>v-snackbar</code>）展示一条消息，通过
+          <code>postMessage</code> 实现。可选能力——工具也完全可以在 iframe 内部自己画提示条。</p>
+        <table class="params">
+          <tr><th>参数</th><th>类型</th><th>说明</th></tr>
+          <tr><td><code>message</code></td><td>str</td><td>提示文案</td></tr>
+          <tr><td><code>level</code></td><td>str</td><td><code>"success"</code> / <code>"error"</code> / <code>"info"</code>（默认） / <code>"warning"</code></td></tr>
+        </table>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============================== theme/locale ============================== -->
+  <section id="theme-locale">
+    <h2>前端如何应对宿主主题 / 语言变化 <span class="anchor">#theme-locale</span></h2>
+    <p class="desc">
+      工具页面运行在一个和宿主完全隔离的 <code>&lt;iframe&gt;</code> 里（CSS/JS 互不影响），
+      所以宿主没办法"直接"把主题/语言变化推给工具页面——机制是这样的：
+    </p>
+
+    <ol>
+      <li>
+        宿主渲染 <code>&lt;iframe&gt;</code> 时，把当前主题和语言拼进 <code>src</code> 的 query
+        string：
+        <pre><code>&lt;iframe src="/get/tool/{tool_id}/index.html?theme=dark&amp;locale=zh"&gt;&lt;/iframe&gt;</code></pre>
+        这样工具页面首次渲染（甚至在任何 JS 跑起来之前，如果你用 <code>&lt;html data-theme="..."&gt;</code>
+        这类 SSR 友好的写法）就能拿到当前主题/语言，不需要等一次异步的 <code>postMessage</code> 握手。
+      </li>
+      <li>
+        <strong>宿主切换深浅色主题或语言时，会重新设置 <code>iframe.src</code>（等同于整页刷新工具
+        页面）</strong>，而不是通过 <code>postMessage</code> 做运行时热更新。这是当前版本的既定行为
+        （见 <a href="https://github.com/PoxenStudio/mybooks/blob/develop/document/Toolbox_Dynamic_Design.md" target="_blank" rel="noopener">Toolbox_Dynamic_Design.md</a>
+        4.3/4.5 节），意味着：
+        <ul>
+          <li>工具页面只需要在<strong>页面加载时读一次</strong>主题/语言并应用样式，不需要监听运行时变化事件；</li>
+          <li>如果工具页面内部有未保存的临时状态（比如表单里正在填的内容），主题切换会导致它丢失——
+            对多数"一次性操作"型工具影响不大，但如果你的工具有需要跨这次刷新保留的状态，请用
+            <code>localStorage</code> 自己保存/恢复（工具的 <code>index.html</code> 是独立源
+            <code>/get/tool/{tool_id}/...</code>，浏览器存储天然按这个源隔离，不会和宿主或其它工具冲突）；</li>
+          <li>如果未来这套机制改成 <code>postMessage</code> 实时推送（4.5 节列的一项待验证风险），
+            会是一次有一定破坏性的行为变更，届时这份文档会同步更新——按 3.4 节约定，商店里的工具通过
+            <code>core_api_version</code> 兼容性检查兜底，前端桥接层的这类变化也会在这里说明。</li>
+        </ul>
+      </li>
+      <li>
+        读取方式：优先用 <code>MyBooksToolBridge.theme</code> / <code>.locale</code>（已经处理好了
+        query string 解析和默认值），不要自己重复解析 <code>location.search</code>：
+        <pre><code>document.documentElement.dataset.theme = MyBooksToolBridge.theme; // "light" | "dark"
+document.documentElement.lang = MyBooksToolBridge.locale;         // "zh" | "zh-TW" | "en" | ...</code></pre>
+      </li>
+      <li>
+        样式层建议用 CSS 变量 + <code>[data-theme]</code> 属性选择器，而不是 JS 逐个元素改
+        <code>style</code>——脚手架模板（<code>mytool init</code> 生成的 <code>frontend/index.html</code>）
+        已经是这个写法：
+        <pre><code>:root { --bg: #fff; --text: #1a1a1a; }
+:root[data-theme="dark"] { --bg: #1a1a1a; --text: #eee; }
+body { background: var(--bg); color: var(--text); }</code></pre>
+      </li>
+    </ol>
+
+    <div class="note">
+      本页顶部的"🌓 主题"按钮就是同一套模式的演示：点一下会给 <code>&lt;html&gt;</code> 设置/清除
+      <code>data-theme</code> 属性并触发一次 CSS 变量切换——工具页面里推荐的做法完全一样，只是触发
+      时机从"用户点按钮"换成"页面加载时读 <code>bridge.theme</code>"。
+    </div>
+  </section>
+
+  <!-- ============================== manifest ============================== -->
+  <section id="manifest">
+    <h2>manifest.json 字段 <span class="anchor">#manifest</span></h2>
+    <p class="desc">工具包根目录的元数据文件，<code>mytool init</code> 会生成一份带占位符的模板，<code>mytool validate</code>/<code>build</code> 会校验这些字段。</p>
+    <table class="params">
+      <tr><th>字段</th><th>必填</th><th>说明</th></tr>
+      <tr><td><code>tool_id</code></td><td>是</td><td>唯一标识，只能是小写字母/数字/下划线</td></tr>
+      <tr><td><code>name</code> / <code>description</code></td><td>是</td><td>展示名称与描述</td></tr>
+      <tr><td><code>revision</code></td><td>是</td><td>语义化版本号 <code>x.y.z</code></td></tr>
+      <tr><td><code>author</code></td><td>是</td><td>作者</td></tr>
+      <tr><td><code>repo_url</code></td><td>是</td><td>源码仓库地址，供商店审核时核对产物与公开源码是否一致</td></tr>
+      <tr><td><code>core_api_version</code></td><td>是</td><td>依赖的最低 Core API 版本，见本页顶部版本号</td></tr>
+      <tr><td><code>entry_backend</code></td><td>是</td><td><code>&lt;module&gt;.&lt;ClassName&gt;</code>，指向 <code>backend/</code> 下继承 <code>BaseTool</code> 的类</td></tr>
+      <tr><td><code>entry_frontend</code></td><td>否</td><td>前端入口文件（相对 <code>frontend/</code>），缺省则工具没有 UI</td></tr>
+      <tr><td><code>page</code></td><td>否</td><td>落地页路径，缺省用 <code>tool_id</code></td></tr>
+      <tr><td><code>api_routes</code></td><td>否</td><td>自定义后端接口：<code>[{"path": "...", "handler": "&lt;module&gt;.&lt;ClassName&gt;"}]</code>，对应 <code>bridge.fetch()</code> 请求的 <code>/api/toolbox/tool/{tool_id}/{path}</code></td></tr>
+    </table>
+  </section>
+
+  <!-- ============================== cli ============================== -->
+  <section id="cli">
+    <h2>mytool CLI <span class="anchor">#cli</span></h2>
+    <p class="desc">完整命令说明见仓库 <a href="https://github.com/PoxenStudio/tools_builder#readme" target="_blank" rel="noopener">README</a>，这里只列速查表。</p>
+    <table class="params">
+      <tr><th>命令</th><th>作用</th></tr>
+      <tr><td><code>mytool init &lt;tool_id&gt;</code></td><td>生成一个新的工具项目骨架</td></tr>
+      <tr><td><code>mytool validate &lt;path&gt;</code></td><td>只做校验，不打包；<code>path</code> 可以是项目目录，也可以是已有的 zip</td></tr>
+      <tr><td><code>mytool build [dir]</code></td><td>校验并打包成 <code>dist/&lt;tool_id&gt;-&lt;revision&gt;.zip</code>，打印 sha256</td></tr>
+      <tr><td><code>mytool bump &lt;major|minor|patch&gt; [dir]</code></td><td>按 semver 规则升级 <code>manifest.json</code> 里的 <code>revision</code></td></tr>
+    </table>
+    <pre><code>npm install -g mybooks-tools-builder
+mytool init my_tool --name "我的工具" --author "你的名字" --repo-url "https://github.com/you/my_tool"
+cd my_tool
+mytool validate .
+mytool build</code></pre>
+  </section>
+</main>
+
+<footer>
+  <p>
+    本页内容同步自 <a href="https://github.com/PoxenStudio/mybooks" target="_blank" rel="noopener">mybooks/mybooks</a>
+    的 <code>webserver/toolbox/core_api.py</code>、<code>app/public/static/toolbox-bridge.js</code>、
+    <code>document/Toolbox_Dynamic_Design.md</code> —— 最近一次同步：<strong>2026-08-25</strong>，
+    对应 Core API <code>1.0.0</code>。如果发现文档和实际行为不一致，请以
+    <a href="https://github.com/PoxenStudio/mybooks" target="_blank" rel="noopener">mybooks/mybooks</a>
+    仓库代码为准，并提 issue。
+  </p>
+  <p>
+    <a href="https://github.com/PoxenStudio/tools_builder" target="_blank" rel="noopener">tools_builder 仓库</a>
+    · <a href="https://github.com/PoxenStudio/mybooks" target="_blank" rel="noopener">mybooks/mybooks 仓库</a>
+  </p>
+</footer>
+
+<script>
+  (function () {
+    var root = document.documentElement;
+    var btn = document.getElementById('theme-toggle');
+    var KEY = 'mybooks-toolbox-docs-theme';
+
+    function apply(theme) {
+      if (theme === 'light' || theme === 'dark') {
+        root.setAttribute('data-theme', theme);
+      } else {
+        root.removeAttribute('data-theme');
+      }
+    }
+
+    var saved = null;
+    try { saved = localStorage.getItem(KEY); } catch (e) { /* ignore */ }
+    apply(saved);
+
+    btn.addEventListener('click', function () {
+      var current = root.getAttribute('data-theme');
+      var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+      var effectiveCurrent = current || (prefersDark ? 'dark' : 'light');
+      var next = effectiveCurrent === 'dark' ? 'light' : 'dark';
+      apply(next);
+      try { localStorage.setItem(KEY, next); } catch (e) { /* ignore */ }
+    });
+  })();
+</script>
+</body>
+</html>

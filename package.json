@@ -1,7 +1,7 @@
 {
   "name": "mybooks-tools-builder",
   "version": "0.1.0",
-  "description": "Scaffold / build / validate CLI for MyBooks Toolbox external plugins (mytool)",
+  "description": "Scaffold / build / validate CLI for MyBooks Toolbox external tools (mytool)",
   "license": "MIT",
   "author": "PoxenStudio",
   "type": "commonjs",
@@ -28,7 +28,7 @@
   "keywords": [
     "mybooks",
     "toolbox",
-    "plugin",
+    "tool",
     "cli"
   ]
 }

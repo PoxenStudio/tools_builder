@@ -5,7 +5,7 @@ const path = require('path');
 
 const MANIFEST_FILENAME = 'manifest.json';
 
-// 必须和 mybooks/mybooks 仓库 webserver/toolbox/plugin_manager.py 里的
+// 必须和 mybooks/mybooks 仓库 webserver/toolbox/toolbox_manager.py 里的
 // REQUIRED_MANIFEST_FIELDS 保持一致（见 document/Toolbox_Dynamic_Design.md 3.2 节）。
 const REQUIRED_FIELDS = [
   'tool_id',
@@ -24,7 +24,7 @@ const SEMVER_RE = /^\d+\.\d+\.\d+$/;
 class ManifestError extends Error {}
 
 /**
- * 校验一个已经解析成对象的 manifest.json，规则与后端 plugin_manager.validate_manifest()
+ * 校验一个已经解析成对象的 manifest.json，规则与后端 toolbox_manager.validate_manifest()
  * 保持同步。校验失败抛 ManifestError，message 里汇总所有问题（而不是抛第一个就停）。
  *
  * @param {object} manifest
@@ -88,7 +88,7 @@ function validateManifestObject(manifest) {
 }
 
 /**
- * 校验一个插件项目目录：manifest.json 存在且合法、entry_backend 指向的模块文件存在、
+ * 校验一个工具项目目录：manifest.json 存在且合法、entry_backend 指向的模块文件存在、
  * entry_frontend（如果声明了）指向的文件存在。对应后端 install_from_zip() 里的同一套检查
  * （3.1/3.2 节），提前在打包前就发现问题。
  *
@@ -112,7 +112,7 @@ function validateProjectDir(dir) {
 
   if (manifest.entry_backend && manifest.entry_backend.includes('.')) {
     // entry_backend 形如 "tool.MyTool"，去掉最后一段 ClassName，剩下的按 "." 拆成
-    // backend/ 下的相对路径（与后端 plugin_manager._module_file_for() 同一套规则）
+    // backend/ 下的相对路径（与后端 toolbox_manager._module_file_for() 同一套规则）
     const moduleParts = manifest.entry_backend.split('.').slice(0, -1);
     const moduleFile = path.join(dir, 'backend', ...moduleParts) + '.py';
     if (!fs.existsSync(moduleFile)) {

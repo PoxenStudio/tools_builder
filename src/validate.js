@@ -9,7 +9,7 @@ const AdmZip = require('adm-zip');
 const { validateProjectDir, ManifestError } = require('./manifest');
 
 /**
- * `mytool validate <path>` 的实现。path 可以是一个插件项目目录，也可以是已经打包好
+ * `mytool validate <path>` 的实现。path 可以是一个工具项目目录，也可以是已经打包好
  * 的 zip（`mytool build` 的产物，或手工打的包），两种情况走同一套校验逻辑（4.2.1 节：
  * "单独跑第 1 步的校验逻辑，可以对着一个目录或已有 zip 跑，用于 CI 或提交前自查，不做实际
  * 打包"）。
