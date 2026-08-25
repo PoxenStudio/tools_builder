@@ -108,8 +108,7 @@ tool_name/
 ### backend/tool.py 能用到什么
 
 `backend/tool.py` 里的类继承 `BaseTool`，运行时由 MyBooks 后端动态加载，可以通过
-`self.api` 访问 Core API（完整设计见 `mybooks/mybooks` 仓库
-`document/Toolbox_Dynamic_Design.md` 第二节）：
+`self.api` 访问 Core API：
 
 - `self.api.calibre` —— 书库读写：`search_books` / `get_metadata` / `set_metadata` /
   `import_file` / `merge_formats` / `add_format` / `delete_book` ...
@@ -172,7 +171,6 @@ MyBooks 实例。
   `i18n.onChange(fn)`（用了前端框架、需要重新渲染而不是直接改 DOM 的工具用这个）。
 - 完全是可选脚手架，不是强制约定——想用 vue-i18n / react-intl 之类，删掉这个文件，直接按
   自己的技术栈接 `bridge.locale`/`bridge.onLocaleChange` 即可。
-- 完整设计见 `mybooks/mybooks` 仓库 `document/Toolbox_Dynamic_Design.md` 4.5/4.6 节。
 
 ### 共享视觉基础（light/dark）
 
@@ -193,8 +191,7 @@ MyBooks 实例。
 深浅色切换复用 `bridge.theme`/`bridge.onThemeChange` 这条通道：页面给 `<body>` 设置
 `data-theme="light"|"dark"`（模板已演示），`theme.css` 里对应的 CSS 变量在
 `body[data-theme="dark"]` 下被覆盖，子元素通过变量继承自动换肤，不需要工具自己写两套样式。
-不想用就整个删掉这个文件，不影响其它任何能力。完整设计见
-`document/Toolbox_Dynamic_Design.md` 4.7 节。
+不想用就整个删掉这个文件，不影响其它任何能力。
 
 ## 明确不做的事（当前版本）
 

@@ -242,10 +242,7 @@
     <h1>MyBooks Toolbox Core API</h1>
     <p class="lead">
       给 MyBooks Toolbox 工具（内置工具与外部工具）用的后端 API（<code>self.api.*</code>）和
-      前端桥接脚本（<code>toolbox-bridge.js</code>）参考文档。设计背景见
-      <a href="https://github.com/PoxenStudio/mybooks/blob/develop/document/Toolbox_Dynamic_Design.md" target="_blank" rel="noopener">
-        mybooks/mybooks · document/Toolbox_Dynamic_Design.md
-      </a>，脚手架 CLI 见本仓库
+      前端桥接脚本（<code>toolbox-bridge.js</code>）参考文档。脚手架 CLI 见本仓库
       <a href="https://github.com/PoxenStudio/tools_builder" target="_blank" rel="noopener">README</a>。
     </p>
     <div class="badges">
@@ -592,9 +589,7 @@
       </li>
       <li>
         <strong>宿主切换深浅色主题或语言时，会重新设置 <code>iframe.src</code>（等同于整页刷新工具
-        页面）</strong>，而不是通过 <code>postMessage</code> 做运行时热更新。这是当前版本的既定行为
-        （见 <a href="https://github.com/PoxenStudio/mybooks/blob/develop/document/Toolbox_Dynamic_Design.md" target="_blank" rel="noopener">Toolbox_Dynamic_Design.md</a>
-        4.3/4.5 节），意味着：
+        页面）</strong>，而不是通过 <code>postMessage</code> 做运行时热更新。注意：
         <ul>
           <li>工具页面只需要在<strong>页面加载时读一次</strong>主题/语言并应用样式，不需要监听运行时变化事件；</li>
           <li>如果工具页面内部有未保存的临时状态（比如表单里正在填的内容），主题切换会导致它丢失——
@@ -670,8 +665,7 @@ mytool build</code></pre>
 <footer>
   <p>
     本页内容同步自 <a href="https://github.com/PoxenStudio/mybooks" target="_blank" rel="noopener">mybooks/mybooks</a>
-    的 <code>webserver/toolbox/core_api.py</code>、<code>app/public/static/toolbox-bridge.js</code>、
-    <code>document/Toolbox_Dynamic_Design.md</code> —— 最近一次同步：<strong>2026-08-25</strong>，
+    的 <code>webserver/toolbox/core_api.py</code>、<code>app/public/static/toolbox-bridge.js</code> —— 最近一次同步：<strong>2026-08-25</strong>，
     对应 Core API <code>1.0.0</code>。如果发现文档和实际行为不一致，请以
     <a href="https://github.com/PoxenStudio/mybooks" target="_blank" rel="noopener">mybooks/mybooks</a>
     仓库代码为准，并提 issue。

@@ -3,7 +3,7 @@
  *
  * 边界：字串目录（frontend/locales/*.json）和这份胶水代码都归工具自己所有，
  * `toolbox-bridge.js`（宿主提供）只负责告诉这里"当前该用哪个语言、语言变了"，不托管任何
- * 字串。完整设计见 mybooks/mybooks 仓库 document/Toolbox_Dynamic_Design.md 4.6 节。
+ * 字串。
  *
  * 这只是脚手架给的默认实现，不是强制约定——想用别的 i18n 方案（vue-i18n、react-intl……）
  * 直接删掉这个文件、按自己的技术栈接 bridge.locale / bridge.onLocaleChange 即可。

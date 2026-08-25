@@ -44,4 +44,3 @@
 | `page` | 否 | 落地页路径，缺省用 `tool_id` |
 | `api_routes` | 否 | 自定义后端接口，`[{"path": "...", "handler": "<module>.<ClassName>"}]` |
 
-完整设计文档在 mybooks/mybooks 仓库的 `document/Toolbox_Dynamic_Design.md`。

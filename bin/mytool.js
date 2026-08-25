@@ -13,7 +13,7 @@ const program = new Command();
 
 program
   .name('mytool')
-  .description('MyBooks Toolbox 外部工具脚手架 / 构建 / 校验 CLI\n\n设计文档: mybooks/mybooks 仓库 document/Toolbox_Dynamic_Design.md 第 4.2.1 节')
+  .description('MyBooks Toolbox 工具脚手架 / 构建 / 校验 CLI')
   .version(pkg.version);
 
 program
@@ -22,7 +22,7 @@ program
   .option('-n, --name <name>', '工具展示名称')
   .option('-a, --author <author>', '作者')
   .option('-d, --description <description>', '工具描述')
-  .option('-r, --repo-url <url>', '源码仓库地址（repo_url，必填，商店审核用）')
+  .option('-r, --repo-url <url>', '源码仓库地址（repo_url，必填，MyBooks审核用）')
   .option('-l, --locales <codes>', '支持的语言，逗号分隔，如 en,zh（见 4.6 节 i18n 方案），默认 en,zh')
   .option('-o, --outdir <dir>', '生成到哪个目录，默认为当前目录下的 <tool_id>')
   .action(async (toolId, options) => {

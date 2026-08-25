@@ -20,7 +20,7 @@ const TEMPLATE_TEXT_FILES = [
 
 const LOCALE_RE = /^[a-z]{2,3}(-[A-Za-z]{2,4})?$/;
 // 脚手架内置的示例文案，覆盖到的语言 init 时直接用；未覆盖到的语言以英文文案为起点生成一份
-// 同结构的 stub，交给作者自己翻译（见 document/Toolbox_Dynamic_Design.md 4.6 节）。
+// 同结构的 stub，需要作者自己翻译。
 const BUILTIN_LOCALES = ['en', 'zh'];
 
 function toClassName(toolId) {

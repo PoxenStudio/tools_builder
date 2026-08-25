@@ -6,7 +6,7 @@ const path = require('path');
 const MANIFEST_FILENAME = 'manifest.json';
 
 // 必须和 mybooks/mybooks 仓库 webserver/toolbox/toolbox_manager.py 里的
-// REQUIRED_MANIFEST_FIELDS 保持一致（见 document/Toolbox_Dynamic_Design.md 3.2 节）。
+// REQUIRED_MANIFEST_FIELDS 保持一致。
 const REQUIRED_FIELDS = [
   'tool_id',
   'name',

@@ -1,8 +1,7 @@
 """
 {{NAME}} —— MyBooks Toolbox 工具后端代码
 
-由 `mybooks-tool init` 生成的模板。CoreAPI 各命名空间的完整设计见
-document/Toolbox_Dynamic_Design.md 第二节（在 mybooks/mybooks 仓库里）；这里只演示最常用
+由 `mybooks-tool init` 生成的模板。演示最常用
 的几个：`self.api.calibre` / `self.api.tasks`。
 
 这份模板运行时依赖真实的 MyBooks 后端环境（Calibre、SQLAlchemy session 等，由
@@ -55,7 +54,7 @@ class RunHandler(BaseHandler):
     """对应 manifest.json 里 api_routes 声明的 /api/toolbox/{{TOOL_ID}}/run。
 
     这与内置工具在 handlers/toolbox.py 里手写 Handler 类是同一套机制，只是从工具目录
-    动态发现，见 document/Toolbox_Dynamic_Design.md 3.6 节。
+    动态发现。
     """
 
     @js

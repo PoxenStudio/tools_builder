@@ -10,7 +10,6 @@
  * 给 <body> 设置 data-theme="light" | "dark"（见 frontend/index.html 示例），本文件的变量
  * 随之切换——不需要工具自己实现深浅色两套样式。
  *
- * 设计见 mybooks/mybooks 仓库 document/Toolbox_Dynamic_Design.md 4.7 节。
  */
 
 :root {
