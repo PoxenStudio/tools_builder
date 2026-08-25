@@ -3,5 +3,37 @@
   "status.ready": "Ready (theme: {theme})",
   "action.run": "Run",
   "result.success": "Run finished",
-  "result.error": "Run failed: {error}"
+  "result.error": "Run failed: {error}",
+
+  "demo.section.backend": "Backend call demo",
+  "demo.section.components": "UI component demo (see lib/theme.css)",
+
+  "demo.alert.info": "This is an info alert (.mb-alert--info).",
+  "demo.alert.success": "This is a success alert (.mb-alert--success).",
+  "demo.alert.warning": "This is a warning alert (.mb-alert--warning).",
+  "demo.alert.error": "This is an error alert (.mb-alert--error).",
+
+  "demo.chip.default": "Default chip",
+  "demo.chip.primary": "Primary chip",
+
+  "demo.list.item1.title": "First item",
+  "demo.list.item1.subtitle": "Subtitle text goes here",
+  "demo.list.item2.title": "Second item",
+  "demo.list.item2.subtitle": "Another line of description",
+
+  "demo.progress.start": "Start progress",
+  "demo.progress.determinate": "Determinate",
+  "demo.progress.indeterminate": "Indeterminate",
+
+  "demo.field.checkbox": "A checkbox option",
+  "demo.field.radioA": "Option A",
+  "demo.field.radioB": "Option B",
+
+  "demo.fileInput.label": "Choose file",
+  "demo.fileInput.placeholder": "No file selected",
+
+  "demo.dialog.open": "Open dialog",
+  "demo.dialog.title": "Dialog title",
+  "demo.dialog.body": "Dialog content goes here.",
+  "demo.dialog.close": "Close"
 }

@@ -174,6 +174,28 @@ MyBooks 实例。
   自己的技术栈接 `bridge.locale`/`bridge.onLocaleChange` 即可。
 - 完整设计见 `mybooks/mybooks` 仓库 `document/Toolbox_Dynamic_Design.md` 4.5/4.6 节。
 
+### 共享视觉基础（light/dark）
+
+`init` 还会生成 `frontend/lib/theme.css`——一份不依赖 Vuetify 的轻量 CSS：颜色变量
+（`--mb-color-bg` / `--mb-color-primary` / `--mb-color-error` 等）+ 一批基础组件 class
+（`.mb-btn` / `.mb-input` / `.mb-card` / `.mb-pre` / `.mb-status--*` / `.mb-alert` /
+`.mb-chip` / `.mb-list-item` / `.mb-progress-linear` / `.mb-spinner` / `.mb-divider` /
+`.mb-dialog` / `.mb-field` / `.mb-file-input` / `.mb-row`/`.mb-col` 等），覆盖到现有内置
+工具（Vuetify 组件）里常见的元素类型，目的是让不同技术栈的工具之间、以及跟内置工具之间
+观感更接近一些，不是强制约定、也不是像素级复刻。
+
+```html
+<link rel="stylesheet" href="lib/theme.css" />
+...
+<button class="mb-btn">Run</button>
+```
+
+深浅色切换复用 `bridge.theme`/`bridge.onThemeChange` 这条通道：页面给 `<body>` 设置
+`data-theme="light"|"dark"`（模板已演示），`theme.css` 里对应的 CSS 变量在
+`body[data-theme="dark"]` 下被覆盖，子元素通过变量继承自动换肤，不需要工具自己写两套样式。
+不想用就整个删掉这个文件，不影响其它任何能力。完整设计见
+`document/Toolbox_Dynamic_Design.md` 4.7 节。
+
 ## 明确不做的事（当前版本）
 
 - **没有 `mytool dev`**：本地开发服务器 + mock 宿主环境（模拟 `toolbox-bridge.js`

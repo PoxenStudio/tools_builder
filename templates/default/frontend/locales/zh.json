@@ -3,5 +3,37 @@
   "status.ready": "已就绪（主题：{theme}）",
   "action.run": "运行",
   "result.success": "运行完成",
-  "result.error": "运行失败：{error}"
+  "result.error": "运行失败：{error}",
+
+  "demo.section.backend": "后端接口调用示例",
+  "demo.section.components": "UI 组件演示（对应 lib/theme.css）",
+
+  "demo.alert.info": "这是一条信息提示（.mb-alert--info）。",
+  "demo.alert.success": "这是一条成功提示（.mb-alert--success）。",
+  "demo.alert.warning": "这是一条警告提示（.mb-alert--warning）。",
+  "demo.alert.error": "这是一条错误提示（.mb-alert--error）。",
+
+  "demo.chip.default": "默认标签",
+  "demo.chip.primary": "主色标签",
+
+  "demo.list.item1.title": "第一项",
+  "demo.list.item1.subtitle": "这里是副标题文字",
+  "demo.list.item2.title": "第二项",
+  "demo.list.item2.subtitle": "另一行描述文字",
+
+  "demo.progress.start": "开始进度",
+  "demo.progress.determinate": "确定进度",
+  "demo.progress.indeterminate": "不定进度",
+
+  "demo.field.checkbox": "一个勾选项",
+  "demo.field.radioA": "选项 A",
+  "demo.field.radioB": "选项 B",
+
+  "demo.fileInput.label": "选择文件",
+  "demo.fileInput.placeholder": "未选择文件",
+
+  "demo.dialog.open": "打开对话框",
+  "demo.dialog.title": "对话框标题",
+  "demo.dialog.body": "对话框内容在这里。",
+  "demo.dialog.close": "关闭"
 }

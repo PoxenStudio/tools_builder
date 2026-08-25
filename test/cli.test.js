@@ -125,6 +125,7 @@ test('init -> validate -> build -> validate(zip) end to end', async () => {
     'frontend/index.html',
     'frontend/lib/',
     'frontend/lib/i18n.js',
+    'frontend/lib/theme.css',
     'frontend/locales/',
     'frontend/locales/en.json',
     'frontend/locales/manifest.json',

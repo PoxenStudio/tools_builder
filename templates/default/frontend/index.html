@@ -3,18 +3,127 @@
 <head>
   <meta charset="utf-8" />
   <title>{{NAME}}</title>
+  <!--
+    lib/theme.css 是脚手架给的默认视觉基础（颜色变量 + 基础按钮/输入框/卡片/提示/列表/进度条
+    等组件样式，支持 light/dark 切换），不引入 Vuetify，也不是强制约定——想换成自己的样式
+    方案，删掉这个文件即可。见 document/Toolbox_Dynamic_Design.md 4.7 节。
+  -->
+  <link rel="stylesheet" href="lib/theme.css" />
   <style>
-    body { font-family: system-ui, -apple-system, sans-serif; margin: 24px; color: #222; }
-    body[data-theme="dark"] { background: #121212; color: #eee; }
-    button { padding: 8px 16px; cursor: pointer; }
-    pre { background: rgba(128, 128, 128, 0.15); padding: 12px; border-radius: 6px; overflow: auto; }
+    section { margin-bottom: 28px; }
+    section > h2 { font-size: 1.05em; margin-bottom: 12px; }
+    .demo-group { margin-bottom: 10px; }
   </style>
 </head>
 <body>
-  <h1>{{NAME}}</h1>
-  <p id="status" data-i18n="status.loading">loading...</p>
-  <button id="run-btn" data-i18n="action.run">Run</button>
-  <pre id="result"></pre>
+  <div class="mb-container">
+    <h1>{{NAME}}</h1>
+
+    <!-- 与工具后端交互的最小示例：bridge.fetch 调用 manifest.json 里声明的 run 接口 -->
+    <section>
+      <h2 data-i18n="demo.section.backend">Backend call demo</h2>
+      <p id="status" class="mb-text-secondary" data-i18n="status.loading">loading...</p>
+      <button id="run-btn" class="mb-btn" data-i18n="action.run">Run</button>
+      <pre id="result" class="mb-pre"></pre>
+    </section>
+
+    <!-- 下面这些都是 lib/theme.css 提供的基础组件 class 的用法示例，删掉整个 section 或
+         按需保留几个都可以；不是必须使用，只是省去从零写一遍的成本。 -->
+    <section>
+      <h2 data-i18n="demo.section.components">UI component demo</h2>
+
+      <div class="demo-group">
+        <div class="mb-alert mb-alert--info" data-i18n="demo.alert.info">info alert</div>
+      </div>
+      <div class="demo-group">
+        <div class="mb-alert mb-alert--success" data-i18n="demo.alert.success">success alert</div>
+      </div>
+      <div class="demo-group">
+        <div class="mb-alert mb-alert--warning" data-i18n="demo.alert.warning">warning alert</div>
+      </div>
+      <div class="demo-group">
+        <div class="mb-alert mb-alert--error" data-i18n="demo.alert.error">error alert</div>
+      </div>
+
+      <div class="demo-group mb-row mb-row--center">
+        <span class="mb-chip" data-i18n="demo.chip.default">chip</span>
+        <span class="mb-chip mb-chip--primary" data-i18n="demo.chip.primary">chip</span>
+      </div>
+
+      <hr class="mb-divider" />
+
+      <div class="demo-group">
+        <div class="mb-list-item">
+          <div class="mb-list-item__avatar"></div>
+          <div class="mb-list-item__content">
+            <div class="mb-list-item__title" data-i18n="demo.list.item1.title">item 1</div>
+            <div class="mb-list-item__subtitle" data-i18n="demo.list.item1.subtitle">subtitle</div>
+          </div>
+        </div>
+        <div class="mb-list-item">
+          <div class="mb-list-item__avatar"></div>
+          <div class="mb-list-item__content">
+            <div class="mb-list-item__title" data-i18n="demo.list.item2.title">item 2</div>
+            <div class="mb-list-item__subtitle" data-i18n="demo.list.item2.subtitle">subtitle</div>
+          </div>
+        </div>
+      </div>
+
+      <hr class="mb-divider" />
+
+      <div class="demo-group">
+        <div class="mb-row mb-row--center">
+          <button id="progress-btn" class="mb-btn mb-btn--secondary" data-i18n="demo.progress.start">start</button>
+          <span class="mb-spinner"></span>
+        </div>
+        <p class="mb-text-secondary" data-i18n="demo.progress.determinate">determinate</p>
+        <div class="mb-progress-linear">
+          <div id="progress-bar" class="mb-progress-linear__bar"></div>
+        </div>
+        <p class="mb-text-secondary" data-i18n="demo.progress.indeterminate">indeterminate</p>
+        <div class="mb-progress-linear mb-progress-linear--indeterminate">
+          <div class="mb-progress-linear__bar"></div>
+        </div>
+      </div>
+
+      <hr class="mb-divider" />
+
+      <div class="demo-group mb-row mb-row--center">
+        <label class="mb-field">
+          <input type="checkbox" />
+          <span data-i18n="demo.field.checkbox">checkbox</span>
+        </label>
+        <label class="mb-field">
+          <input type="radio" name="demo-radio" checked />
+          <span data-i18n="demo.field.radioA">A</span>
+        </label>
+        <label class="mb-field">
+          <input type="radio" name="demo-radio" />
+          <span data-i18n="demo.field.radioB">B</span>
+        </label>
+      </div>
+
+      <div class="demo-group">
+        <label class="mb-file-input">
+          <button class="mb-btn mb-btn--secondary" type="button" onclick="this.nextElementSibling.click()" data-i18n="demo.fileInput.label">choose file</button>
+          <input id="file-input" class="mb-file-input__native" type="file" />
+          <span id="file-input-name" class="mb-text-secondary" data-i18n="demo.fileInput.placeholder">no file</span>
+        </label>
+      </div>
+
+      <div class="demo-group">
+        <button id="dialog-open-btn" class="mb-btn" data-i18n="demo.dialog.open">open dialog</button>
+      </div>
+    </section>
+  </div>
+
+  <div id="dialog-overlay" class="mb-dialog-overlay" style="display: none">
+    <div class="mb-dialog">
+      <h3 data-i18n="demo.dialog.title">dialog title</h3>
+      <p data-i18n="demo.dialog.body">dialog body</p>
+      <button id="dialog-close-btn" class="mb-btn" data-i18n="demo.dialog.close">close</button>
+    </div>
+  </div>
 
   <!--
     MyBooksToolBridge 由宿主 MyBooks 在运行时提供（app/public/static/toolbox-bridge.js，
@@ -38,14 +147,13 @@
     // 宿主切换深浅色主题时会通过 postMessage 实时推送，不需要重新加载 iframe（4.5 节）
     bridge.onThemeChange(applyTheme);
 
-    i18n.ready.then(function () {
+    function refreshStatus() {
       document.getElementById('status').textContent = i18n.t('status.ready', { theme: bridge.theme });
-    });
+    }
+    i18n.ready.then(refreshStatus);
     // 宿主切换语言时，i18n 会自动重新加载对应字串表并调用 applyDom() 刷新页面上所有
     // data-i18n 元素；这里只需要额外刷新用 i18n.t() 手写的那部分文本。
-    i18n.onChange(function () {
-      document.getElementById('status').textContent = i18n.t('status.ready', { theme: bridge.theme });
-    });
+    i18n.onChange(refreshStatus);
 
     document.getElementById('run-btn').addEventListener('click', function () {
       bridge.fetch('run').then(function (data) {
@@ -54,6 +162,28 @@
       }).catch(function (err) {
         bridge.notify(i18n.t('result.error', { error: err }), 'error');
       });
+    });
+
+    // .mb-progress-linear 演示：点一下往前推进，到头了回到 0（纯前端效果，不接后端）
+    var progressPct = 0;
+    document.getElementById('progress-btn').addEventListener('click', function () {
+      progressPct = progressPct >= 100 ? 0 : Math.min(100, progressPct + 20);
+      document.getElementById('progress-bar').style.width = progressPct + '%';
+    });
+
+    // .mb-file-input 演示：把原生 file input 藏起来，用按钮触发，显示选中的文件名
+    document.getElementById('file-input').addEventListener('change', function (e) {
+      var file = e.target.files && e.target.files[0];
+      document.getElementById('file-input-name').textContent = file ? file.name : i18n.t('demo.fileInput.placeholder');
+    });
+
+    // .mb-dialog-overlay 演示：纯 CSS + 一点点 JS 切换 display，不内置任何框架行为
+    var dialogOverlay = document.getElementById('dialog-overlay');
+    document.getElementById('dialog-open-btn').addEventListener('click', function () {
+      dialogOverlay.style.display = 'flex';
+    });
+    document.getElementById('dialog-close-btn').addEventListener('click', function () {
+      dialogOverlay.style.display = 'none';
     });
   </script>
 </body>
