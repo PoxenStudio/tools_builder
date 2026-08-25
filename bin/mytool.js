@@ -12,7 +12,7 @@ const { runBump } = require('../src/bump');
 const program = new Command();
 
 program
-  .name('mybooks-tool')
+  .name('mytool')
   .description('MyBooks Toolbox 外部插件脚手架 / 构建 / 校验 CLI\n\n设计文档: mybooks/mybooks 仓库 document/Toolbox_Dynamic_Design.md 第 4.2.1 节')
   .version(pkg.version);
 

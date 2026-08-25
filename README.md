@@ -1,4 +1,4 @@
-# tool_builder (`mybooks-tool`)
+# Tools Builder (`mytool`)
 
 MyBooks Toolbox 外部插件的脚手架 / 构建 / 校验 CLI。
 
@@ -10,15 +10,15 @@ MyBooks Toolbox 外部插件的脚手架 / 构建 / 校验 CLI。
 ## 安装
 
 ```bash
-npm install -g mybooks-tool-builder
+npm install -g mybooks-tools-builder
 # 或不装到全局，直接 npx 用：
-npx mybooks-tool-builder --help
+npx mybooks-tools-builder --help
 ```
 
 ## 快速开始
 
 ```bash
-mybooks-tool init my_tool \
+mytool init my_tool \
   --name "我的工具" \
   --author "你的名字" \
   --description "工具做什么" \
@@ -27,8 +27,8 @@ mybooks-tool init my_tool \
 cd my_tool
 # 改 backend/tool.py 和 frontend/index.html，写你的业务逻辑
 
-mybooks-tool validate .      # 打包前先校验一遍
-mybooks-tool build            # 产出 dist/my_tool-0.1.0.zip，打印 sha256
+mytool validate .      # 打包前先校验一遍
+mytool build            # 产出 dist/my_tool-0.1.0.zip，打印 sha256
 ```
 
 打包出来的 zip：
@@ -43,10 +43,10 @@ mybooks-tool build            # 产出 dist/my_tool-0.1.0.zip，打印 sha256
 
 | 命令 | 作用 |
 |---|---|
-| `mybooks-tool init <tool_id>` | 生成一个新的插件项目骨架 |
-| `mybooks-tool validate <path>` | 只做校验，不打包；`path` 可以是项目目录，也可以是已有的 zip |
-| `mybooks-tool build [dir]` | 校验并打包成 `dist/<tool_id>-<revision>.zip`，打印 sha256 |
-| `mybooks-tool bump <major\|minor\|patch> [dir]` | 按 semver 规则升级 `manifest.json` 里的 `revision` |
+| `mytool init <tool_id>` | 生成一个新的插件项目骨架 |
+| `mytool validate <path>` | 只做校验，不打包；`path` 可以是项目目录，也可以是已有的 zip |
+| `mytool build [dir]` | 校验并打包成 `dist/<tool_id>-<revision>.zip`，打印 sha256 |
+| `mytool bump <major\|minor\|patch> [dir]` | 按 semver 规则升级 `manifest.json` 里的 `revision` |
 
 `init` 支持的选项：`--name` / `--author` / `--description` / `--repo-url` / `--outdir`；
 不带这些选项时会在终端里交互式询问（非 TTY 环境下静默用空值/默认值，不会挂起）。
@@ -112,7 +112,7 @@ my_tool/
   `get_config` / `set_config`
 
 这份代码依赖真实的 MyBooks 运行环境（Calibre、SQLAlchemy session 等），无法脱离 MyBooks
-单独跑，`mybooks-tool` 目前也不模拟这部分——实际验证逻辑要走开发者模式装进一个真实的
+单独跑，`mytool` 目前也不模拟这部分——实际验证逻辑要走开发者模式装进一个真实的
 MyBooks 实例。
 
 ### frontend/index.html 能用到什么
@@ -128,11 +128,11 @@ MyBooks 实例。
 
 ## 明确不做的事（当前版本）
 
-- **没有 `mybooks-tool dev`**：本地开发服务器 + mock 宿主环境（模拟 `toolbox-bridge.js`
+- **没有 `mytool dev`**：本地开发服务器 + mock 宿主环境（模拟 `toolbox-bridge.js`
   和一个假的 MyBooks 后端）暂时没做。`backend/tool.py` 的实际运行验证目前只能靠开发者模式
   装进一个真实的 MyBooks 实例；`frontend/index.html` 可以用任意静态文件服务器单独打开看
   页面结构，但 `bridge.fetch(...)` 这部分同样需要真实后端。
-- **没有 `mybooks-tool publish`**：一键发布到 mybooks.top 商店的命令——商店侧的提交/审核
+- **没有 `mytool publish`**：一键发布到 mybooks.top 商店的命令——商店侧的提交/审核
   API 还没有定义，等这部分确定后再补。
 
 ## 与 MyBooks 核心仓库的版本对齐

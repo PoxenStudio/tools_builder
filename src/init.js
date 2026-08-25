@@ -51,7 +51,7 @@ function applyReplacements(dir, replacements) {
 }
 
 /**
- * `mybooks-tool init <tool_id>` 的实现。交互式补全缺失字段（非 TTY 环境下用默认值，不会
+ * `mytool init <tool_id>` 的实现。交互式补全缺失字段（非 TTY 环境下用默认值，不会
  * 挂起），从 templates/default 拷贝一份骨架并替换占位符。
  */
 async function runInit(toolId, options) {
@@ -92,8 +92,8 @@ async function runInit(toolId, options) {
   console.log(`✔ 已生成插件骨架：${outDir}`);
   console.log('  下一步：');
   console.log(`    cd ${path.relative(process.cwd(), outDir) || '.'}`);
-  console.log('    mybooks-tool validate .');
-  console.log('    mybooks-tool build');
+  console.log('    mytool validate .');
+  console.log('    mytool build');
 }
 
 module.exports = { runInit, toClassName };

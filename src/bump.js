@@ -15,7 +15,7 @@ function bumpVersion(revision, part) {
 }
 
 /**
- * `mybooks-tool bump <major|minor|patch> [dir]`：按 semver 规则更新 manifest.json 里的
+ * `mytool bump <major|minor|patch> [dir]`：按 semver 规则更新 manifest.json 里的
  * revision（4.2.1 节）。
  */
 async function runBump(part, dir) {

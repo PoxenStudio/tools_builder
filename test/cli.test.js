@@ -76,7 +76,7 @@ test('bumpVersion: major/minor/patch', () => {
 });
 
 test('init -> validate -> build -> validate(zip) end to end', async () => {
-  const workDir = tmpDir('mybooks-tool-test-');
+  const workDir = tmpDir('mytool-test-');
   const outDir = path.join(workDir, 'demo_tool');
 
   await captureConsole(() =>
@@ -126,7 +126,7 @@ test('init -> validate -> build -> validate(zip) end to end', async () => {
 });
 
 test('build fails fast when manifest is invalid', async () => {
-  const workDir = tmpDir('mybooks-tool-test-badmanifest-');
+  const workDir = tmpDir('mytool-test-badmanifest-');
   fs.writeFileSync(path.join(workDir, 'manifest.json'), JSON.stringify({ tool_id: 'x' }));
   fs.mkdirSync(path.join(workDir, 'backend'));
 
@@ -139,7 +139,7 @@ test('build fails fast when manifest is invalid', async () => {
 });
 
 test('bump updates manifest.json revision in place', async () => {
-  const workDir = tmpDir('mybooks-tool-test-bump-');
+  const workDir = tmpDir('mytool-test-bump-');
   const manifestPath = path.join(workDir, 'manifest.json');
   fs.writeFileSync(manifestPath, JSON.stringify({ tool_id: 'x', revision: '0.1.0' }));
 

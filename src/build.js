@@ -29,7 +29,7 @@ function sha256File(filePath) {
 const EXCLUDE_RE = /(^|\/)(__pycache__\/|\.pyc$|\.DS_Store$)/;
 
 /**
- * `mybooks-tool build [dir]` 的实现：
+ * `mytool build [dir]` 的实现：
  *   1) 校验 manifest.json（复用 validate 的同一套逻辑，见 4.2.1 节）
  *   2) 前端构建 —— frontend/ 已经是静态文件就直接用；.toolbuilder.json 声明了
  *      frontendBuildCommand 就先跑这个命令，再从 frontendOutputDir 取产物，脚手架本身不
