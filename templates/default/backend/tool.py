@@ -52,9 +52,9 @@ class {{CLASS_NAME}}(BaseTool):
 
 
 class RunHandler(BaseHandler):
-    """对应 manifest.json 里 api_routes 声明的 /api/toolbox/plugin/{{TOOL_ID}}/run。
+    """对应 manifest.json 里 api_routes 声明的 /api/toolbox/{{TOOL_ID}}/run。
 
-    这与内置工具在 handlers/toolbox.py 里手写 Handler 类是同一套机制，只是从插件目录
+    这与内置工具在 handlers/toolbox.py 里手写 Handler 类是同一套机制，只是从工具目录
     动态发现，见 document/Toolbox_Dynamic_Design.md 3.6 节。
     """
 
