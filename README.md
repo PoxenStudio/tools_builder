@@ -3,11 +3,9 @@
 MyBooks Toolbox 外部插件的脚手架 / 构建 / 校验 CLI。
 
 设计背景：MyBooks（`mybooks/mybooks` 仓库）的 Toolbox 支持以"外部插件"的形式动态安装工具，
-不需要改动核心仓库代码就能新增功能。完整架构设计见 `mybooks/mybooks` 仓库的
-`document/Toolbox_Dynamic_Design.md`，本仓库对应文档里的 4.2.1 节。
+不需要改动核心仓库代码就能新增功能。
 
-这个仓库独立于 `mybooks/mybooks` 主仓库维护，工具作者也可以完全不用这个脚手架——只要产物
-符合"一个 `manifest.json` + `backend/` + `frontend/`"的约定即可（见下方"包结构"）。
+工具作者也可以完全不用这个脚手架——只要产物符合"一个 `manifest.json` + `backend/` + `frontend/`"的约定即可（见下方"包结构"）。
 
 ## 安装
 
@@ -16,8 +14,6 @@ npm install -g mybooks-tool-builder
 # 或不装到全局，直接 npx 用：
 npx mybooks-tool-builder --help
 ```
-
-（还没发布到 npm 前，在本仓库目录下 `npm link` 即可本地用 `mybooks-tool` 命令。）
 
 ## 快速开始
 
@@ -39,11 +35,9 @@ mybooks-tool build            # 产出 dist/my_tool-0.1.0.zip，打印 sha256
 
 - 在一个开启了"开发者模式"（管理员在系统设置里打开 `ENABLE_TOOLBOX_DEV_MODE`）的 MyBooks
   实例的 `/admin/toolbox` 页面里上传安装（`POST /api/toolbox/install/upload`）；
-- 或者提交给 mybooks.top 商店登记（连同 `build` 打印的 sha256），走商店安装路径——这条路径
-  依赖 mybooks.top 那边尚未上线的接口，见设计文档 3.4 节。
+- 或者提交给MyBooks审核发布（连同 `build` 打印的 sha256）。
 
-安装后需要**重启一次 MyBooks 进程**才会真正生效（"重启生效"模型，见设计文档 3.3.1 节）；
-之后管理员可以随时对它做禁用/启用（立即生效，不需要重启）或卸载。
+安装后需要**重启MyBooks**才会真正生效。之后管理员可以随时对它做禁用/启用（立即生效，不需要重启）或卸载。
 
 ## 命令
 
