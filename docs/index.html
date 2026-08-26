@@ -229,6 +229,8 @@
       <a href="#core-api">Core API</a>
       <a href="#bridge">toolbox-bridge.js</a>
       <a href="#theme-locale">主题 / 语言联动</a>
+      <a href="#i18n">前端多语言</a>
+      <a href="#theme-css">共享视觉基础</a>
       <a href="#manifest">manifest.json</a>
       <a href="#cli">mytool CLI</a>
     </nav>
@@ -246,7 +248,7 @@
       <a href="https://github.com/PoxenStudio/tools_builder" target="_blank" rel="noopener">README</a>。
     </p>
     <div class="badges">
-      <span class="badge">Core API <code>1.0.0</code></span>
+      <span class="badge">Core API <code>1.1.0</code></span>
       <span class="badge">CLI 命令 <code>mytool</code></span>
       <span class="badge">类型 <code>builtin</code> / <code>tool</code></span>
       <span class="badge" id="sync-badge">同步自 mybooks/mybooks · 见页尾</span>
@@ -266,7 +268,7 @@
     <h2>后端：Core API <span class="anchor">#core-api</span></h2>
     <p class="desc">
       挂在 <code>self.api</code> 上，按命名空间划分：<code>calibre</code> / <code>db</code> /
-      <code>tasks</code> / <code>messages</code> / <code>storage</code>。所有方法都是同步调用，
+      <code>tasks</code> / <code>messages</code> / <code>storage</code> / <code>settings</code>。所有方法都是同步调用，
       工具作者不需要关心背后是 Calibre 的 <code>legacy</code> DB、<code>new_api</code>，
       还是应用自己的 SQLAlchemy session——这层解耦正是 Core API 存在的意义，接口本身按
       语义化版本演进（manifest.json 的 <code>core_api_version</code> 声明兼容的最低版本）。
@@ -503,6 +505,39 @@
       <div class="body"><p>把 <code>data</code>（dict）写入该工具的持久化配置文件；适合保存 API Key、用户偏好这类"重启也要记住"的设置。写入失败会抛 <code>RuntimeError</code>。</p></div>
     </details>
 
+    <h3 class="ns"><span class="ns-tag">self.api.settings</span> 系统配置只读白名单</h3>
+    <p class="ns-desc">
+      MyBooks 的系统配置（数据库连接串、各种第三方 API key/token 等）不能整份透给工具，
+      所以这里只开放一个白名单：只有显式登记过的 key 才能读到，其余一律返回调用方传入的
+      <code>default</code>，不会抛异常。
+    </p>
+
+    <details class="method" open>
+      <summary><span class="sig"><span class="ns-prefix">settings.</span>get(key, default=None)</span>
+        <span class="one-line">→ Any</span></summary>
+      <div class="body">
+        <table class="params">
+          <tr><th>参数</th><th>类型</th><th>说明</th></tr>
+          <tr><td><code>key</code></td><td>str</td><td>配置项名称，必须在白名单内才读得到真实值</td></tr>
+          <tr><td><code>default</code></td><td>Any</td><td>key 不在白名单内，或 CONF 里没有这一项时返回的兜底值</td></tr>
+        </table>
+        <p>当前白名单（源头见 mybooks/mybooks 仓库 <code>webserver/toolbox/core_api.py</code> 的
+          <code>SettingsAPI.ALLOWED_KEYS</code>）：</p>
+        <table class="params">
+          <tr><th>key</th><th>说明</th></tr>
+          <tr><td><code>auto_fill_meta</code></td><td>是否自动补全导入书籍的元数据</td></tr>
+          <tr><td><code>audio_output_folder</code></td><td>音频类工具的输出目录路径</td></tr>
+          <tr><td><code>DEFAULT_LANGUAGE</code></td><td>站点默认语言，可用作工具自行做多语言展示的兜底</td></tr>
+        </table>
+        <div class="note">
+          需要读一个不在名单里的 key？这属于新的功能需求，请在
+          <a href="https://github.com/PoxenStudio/mybooks" target="_blank" rel="noopener">mybooks/mybooks</a>
+          开 issue 请求加白名单，而不是自己找办法绕过 <code>self.api</code> 直接读 <code>CONF</code>——
+          外部工具本来就没有这个能力，内置工具这么做也过不了后续的代码审查。
+        </div>
+      </div>
+    </details>
+
     <div class="warn">
       <strong>没有开放的能力</strong>：Core API 不提供任意 SQL / ORM 查询的"逃生舱"——只暴露具名方法。
       如果你的工具需要一个这里没有的能力，说明这是一个值得补充到 Core API 的通用需求，请在
@@ -528,13 +563,30 @@
     </details>
 
     <details class="method">
-      <summary><span class="sig">bridge.theme</span> <span class="one-line">"light" | "dark"</span></summary>
-      <div class="body"><p>宿主当前主题。详见下方 <a href="#theme-locale">主题 / 语言联动</a>。</p></div>
+      <summary><span class="sig">bridge.theme</span> <span class="one-line">"light" | "dark"（getter，始终最新）</span></summary>
+      <div class="body"><p>宿主当前主题。宿主切换深浅色主题时会实时更新，不需要刷新页面。详见下方 <a href="#theme-locale">主题 / 语言联动</a>。</p></div>
     </details>
 
     <details class="method">
-      <summary><span class="sig">bridge.locale</span> <span class="one-line">string</span></summary>
-      <div class="body"><p>宿主当前语言（如 <code>"zh"</code> / <code>"zh-TW"</code> / <code>"en"</code>）。详见下方 <a href="#theme-locale">主题 / 语言联动</a>。</p></div>
+      <summary><span class="sig">bridge.locale</span> <span class="one-line">string（getter，始终最新）</span></summary>
+      <div class="body"><p>宿主当前语言（如 <code>"zh"</code> / <code>"zh-TW"</code> / <code>"en"</code>）。宿主切换语言时会实时更新，不需要刷新页面。详见下方 <a href="#theme-locale">主题 / 语言联动</a>。</p></div>
+    </details>
+
+    <details class="method">
+      <summary><span class="sig">bridge.onThemeChange(fn)</span> <span class="one-line">→ 取消订阅函数</span></summary>
+      <div class="body">
+        <p>注册一个 <code>fn(newTheme, oldTheme)</code> 回调，宿主切换主题时调用；不调用也没关系——
+          <code>bridge.theme</code> 本身随时读到的都是最新值，只是不会主动收到"变了"这件事的推送。</p>
+      </div>
+    </details>
+
+    <details class="method">
+      <summary><span class="sig">bridge.onLocaleChange(fn)</span> <span class="one-line">→ 取消订阅函数</span></summary>
+      <div class="body">
+        <p>注册一个 <code>fn(newLocale, oldLocale)</code> 回调，宿主切换语言时调用；用法与
+          <code>onThemeChange</code> 对称。脚手架默认生成的 <code>lib/i18n.js</code>（见
+          <a href="#i18n">前端多语言</a>）内部就是订阅这个事件来自动刷新译文的。</p>
+      </div>
     </details>
 
     <details class="method" open>
@@ -575,52 +627,167 @@
   <section id="theme-locale">
     <h2>前端如何应对宿主主题 / 语言变化 <span class="anchor">#theme-locale</span></h2>
     <p class="desc">
-      工具页面运行在一个和宿主完全隔离的 <code>&lt;iframe&gt;</code> 里（CSS/JS 互不影响），
-      所以宿主没办法"直接"把主题/语言变化推给工具页面——机制是这样的：
+      工具页面运行在一个和宿主完全隔离的 <code>&lt;iframe&gt;</code> 里（CSS/JS 互不影响），机制是这样的：
     </p>
 
     <ol>
       <li>
         宿主渲染 <code>&lt;iframe&gt;</code> 时，把当前主题和语言拼进 <code>src</code> 的 query
-        string：
+        string（作为<strong>初始值</strong>）：
         <pre><code>&lt;iframe src="/get/tool/{tool_id}/index.html?theme=dark&amp;locale=zh"&gt;&lt;/iframe&gt;</code></pre>
         这样工具页面首次渲染（甚至在任何 JS 跑起来之前，如果你用 <code>&lt;html data-theme="..."&gt;</code>
-        这类 SSR 友好的写法）就能拿到当前主题/语言，不需要等一次异步的 <code>postMessage</code> 握手。
+        这类 SSR 友好的写法）就能同步拿到当前主题/语言，不用等一次异步的 <code>postMessage</code> 握手。
       </li>
       <li>
-        <strong>宿主切换深浅色主题或语言时，会重新设置 <code>iframe.src</code>（等同于整页刷新工具
-        页面）</strong>，而不是通过 <code>postMessage</code> 做运行时热更新。注意：
+        <strong>宿主切换深浅色主题或语言时，通过 <code>postMessage</code> 做运行时热更新，不再重新设置
+        <code>iframe.src</code></strong>——不会触发工具页面整页刷新：
         <ul>
-          <li>工具页面只需要在<strong>页面加载时读一次</strong>主题/语言并应用样式，不需要监听运行时变化事件；</li>
-          <li>如果工具页面内部有未保存的临时状态（比如表单里正在填的内容），主题切换会导致它丢失——
-            对多数"一次性操作"型工具影响不大，但如果你的工具有需要跨这次刷新保留的状态，请用
-            <code>localStorage</code> 自己保存/恢复（工具的 <code>index.html</code> 是独立源
-            <code>/get/tool/{tool_id}/...</code>，浏览器存储天然按这个源隔离，不会和宿主或其它工具冲突）；</li>
-          <li>如果未来这套机制改成 <code>postMessage</code> 实时推送（4.5 节列的一项待验证风险），
-            会是一次有一定破坏性的行为变更，届时这份文档会同步更新——按 3.4 节约定，商店里的工具通过
-            <code>core_api_version</code> 兼容性检查兜底，前端桥接层的这类变化也会在这里说明。</li>
+          <li>宿主页面监听 <code>$i18n.locale</code>/<code>$vuetify.theme.dark</code> 变化，向 iframe
+            发 <code>{ source: "mybooks-toolbox-host", type: "locale-change" | "theme-change", locale | theme }</code>；</li>
+          <li><code>toolbox-bridge.js</code> 内部监听这个消息，更新 <code>bridge.theme</code>/
+            <code>bridge.locale</code>（用 getter 暴露，读到的始终是最新值），并触发工具通过
+            <code>bridge.onThemeChange</code>/<code>bridge.onLocaleChange</code> 注册的回调；</li>
+          <li>工具页面内部的临时状态（表单输入等）在切换时会<strong>保留</strong>，不会像整页刷新那样丢失——
+            这也是从"重设 <code>iframe.src</code>"方案改过来的主要动机；</li>
+          <li>旧版工具（没有调用 <code>onThemeChange</code>/<code>onLocaleChange</code>）不受影响：
+            读取 <code>bridge.theme</code>/<code>bridge.locale</code> 的方式没变，只是不会主动收到
+            "变了"的推送，行为退化为"首次加载后主题/语言就不再更新"，不会报错、不会崩溃。</li>
         </ul>
       </li>
       <li>
-        读取方式：优先用 <code>MyBooksToolBridge.theme</code> / <code>.locale</code>（已经处理好了
-        query string 解析和默认值），不要自己重复解析 <code>location.search</code>：
+        读取初始值/订阅变化都用 <code>MyBooksToolBridge</code>，不要自己解析 <code>location.search</code>
+        或监听 <code>window.onmessage</code>：
         <pre><code>document.documentElement.dataset.theme = MyBooksToolBridge.theme; // "light" | "dark"
-document.documentElement.lang = MyBooksToolBridge.locale;         // "zh" | "zh-TW" | "en" | ...</code></pre>
+document.documentElement.lang = MyBooksToolBridge.locale;         // "zh" | "zh-TW" | "en" | ...
+
+MyBooksToolBridge.onThemeChange(function (theme) {
+  document.documentElement.dataset.theme = theme; // 实时跟随宿主切换
+});
+MyBooksToolBridge.onLocaleChange(function (locale) {
+  document.documentElement.lang = locale;
+});</code></pre>
       </li>
       <li>
-        样式层建议用 CSS 变量 + <code>[data-theme]</code> 属性选择器，而不是 JS 逐个元素改
-        <code>style</code>——脚手架模板（<code>mytool init</code> 生成的 <code>frontend/index.html</code>）
-        已经是这个写法：
+        样式层建议用 CSS 变量 + <code>[data-theme]</code>/<code>data-theme</code> 属性选择器，而不是
+        JS 逐个元素改 <code>style</code>——脚手架模板、以及下方 <a href="#theme-css">共享视觉基础
+        theme.css</a> 都是这个写法：
         <pre><code>:root { --bg: #fff; --text: #1a1a1a; }
-:root[data-theme="dark"] { --bg: #1a1a1a; --text: #eee; }
+body[data-theme="dark"] { --bg: #1a1a1a; --text: #eee; }
 body { background: var(--bg); color: var(--text); }</code></pre>
       </li>
     </ol>
 
     <div class="note">
-      本页顶部的"🌓 主题"按钮就是同一套模式的演示：点一下会给 <code>&lt;html&gt;</code> 设置/清除
-      <code>data-theme</code> 属性并触发一次 CSS 变量切换——工具页面里推荐的做法完全一样，只是触发
-      时机从"用户点按钮"换成"页面加载时读 <code>bridge.theme</code>"。
+      本页顶部的"🌓 主题"按钮是同一套模式的简化演示（本地切换，不经过 <code>postMessage</code>）：
+      点一下给 <code>&lt;html&gt;</code> 设置/清除 <code>data-theme</code> 属性并触发一次 CSS 变量
+      切换——工具页面里推荐的做法一致，只是触发时机换成了 <code>bridge.onThemeChange</code> 回调。
+    </div>
+  </section>
+
+  <!-- ============================== i18n ============================== -->
+  <section id="i18n">
+    <h2>工具前端的多语言（i18n）方案 <span class="anchor">#i18n</span></h2>
+    <p class="desc">
+      <strong>边界原则</strong>：翻译字串归工具自己所有，<code>toolbox-bridge.js</code> 只负责
+      "告诉工具当前该用哪个语言、语言变了要通知它"（<code>bridge.locale</code> +
+      <code>bridge.onLocaleChange</code>，见 <a href="#theme-locale">上一节</a>），不提供、
+      不托管任何字串目录——工具前端可以自由选择技术栈，一个共享的翻译渲染库会隐含对 DOM
+      结构/框架的假设，Vue3/React/纯 HTML 工具"如何应用一段翻译文本"的做法并不相同。
+    </p>
+
+    <p>后端侧 <code>self.api.*</code> 抛出的、经过 <code>_()</code> 包过的字符串会跟着当前用户的
+      站点语言走（前提是这些字符串已经在 MyBooks 自己的翻译目录里）；工具自己代码/前端里的字符串
+      不会被自动翻译，需要工具自己维护。</p>
+
+    <h3 class="ns">脚手架默认实现：<code>frontend/lib/i18n.js</code> + <code>frontend/locales/*.json</code></h3>
+    <p class="ns-desc"><code>mytool init</code> 默认生成一套开箱即用、不依赖任何框架的最小 i18n
+      胶水代码（可以整个删掉换成自己的方案，不是强制约定）：</p>
+
+    <details class="method">
+      <summary><span class="sig">frontend/locales/manifest.json</span></summary>
+      <div class="body">
+        <p>声明这个工具支持哪些语言与默认语言：</p>
+        <pre><code>{ "default": "en", "locales": ["en", "zh"] }</code></pre>
+        <p><code>mytool init --locales en,zh,ja</code>（默认 <code>en,zh</code>）据此生成/追加对应的
+          <code>frontend/locales/&lt;code&gt;.json</code>；脚手架内置了 <code>en</code>/<code>zh</code>
+          两份示例文案，请求的其它语言代码没有内置文案时，会以英文文案为初始内容生成一份同结构的
+          stub 文件，交给作者自行翻译。</p>
+      </div>
+    </details>
+
+    <details class="method">
+      <summary><span class="sig">frontend/locales/&lt;code&gt;.json</span></summary>
+      <div class="body">
+        <p>扁平 key-value 字符串表，支持 <code>{param}</code> 占位符：</p>
+        <pre><code>{ "action.run": "Run", "result.error": "Run failed: {error}" }</code></pre>
+      </div>
+    </details>
+
+    <details class="method" open>
+      <summary><span class="sig">window.MyBooksToolI18n.create(options)</span></summary>
+      <div class="body">
+        <p>启动时先 <code>fetch('locales/manifest.json')</code>，据此解析 <code>bridge.locale</code>
+          应该匹配到哪个已声明的语言（精确匹配 → 语言前缀匹配，如 <code>zh-CN</code> 匹配
+          <code>zh</code> → 都没有则退回 <code>default</code>），再懒加载对应的
+          <code>locales/&lt;code&gt;.json</code>。返回的实例提供：</p>
+        <table class="params">
+          <tr><th>方法</th><th>说明</th></tr>
+          <tr><td><code>i18n.ready</code></td><td>Promise，首次加载完成后 resolve</td></tr>
+          <tr><td><code>i18n.t(key, params)</code></td><td>取当前语言的字串，缺失回退到 <code>default</code> 语言，再缺失原样返回 <code>key</code>；支持 <code>{param}</code> 插值</td></tr>
+          <tr><td><code>i18n.applyDom(root)</code></td><td>把 <code>root</code>（缺省 <code>document</code>）内所有带 <code>data-i18n="key"</code> / <code>data-i18n-attr="attr:key;attr2:key2"</code> 的元素替换成对应译文，纯 HTML/无框架的工具可以直接用它做整页翻译</td></tr>
+          <tr><td><code>i18n.onChange(fn)</code></td><td>语言变化时（内部已订阅 <code>bridge.onLocaleChange</code> 并自动重新 <code>applyDom()</code>）额外触发一次回调，供用了前端框架、需要重新渲染而不是直接改 DOM 的工具使用</td></tr>
+        </table>
+        <pre><code>const i18n = window.MyBooksToolI18n.create();
+i18n.ready.then(() => {
+  document.getElementById('status').textContent = i18n.t('status.ready', { theme: bridge.theme });
+});
+i18n.onChange(() => { /* 重新渲染用 i18n.t() 手写的那部分文本 */ });</code></pre>
+      </div>
+    </details>
+
+    <h3 class="ns"><code>manifest.json</code> 新增可选字段</h3>
+    <pre><code>{ "locales": ["en", "zh"], "default_locale": "en" }</code></pre>
+    <p>纯展示性质的元数据（供 mybooks.top 商店列表展示"支持语言"、<code>/admin/toolbox</code>
+      工具详情展示用），不参与后端加载/兼容性检查，不绑定 <code>core_api_version</code>；
+      <code>mytool validate</code>/<code>build</code> 只做格式性检查（是数组、
+      <code>default_locale</code> 在 <code>locales</code> 里），省略时不影响工具正常安装运行。</p>
+  </section>
+
+  <!-- ============================== theme.css ============================== -->
+  <section id="theme-css">
+    <h2>共享视觉基础：theme.css <span class="anchor">#theme-css</span></h2>
+    <p class="desc">
+      iframe 自包含带来 CSS/JS 完全隔离的同时，也让不同工具、以及工具与内置工具之间的视觉观感
+      天然缺乏一致性——新工具默认拿不到宿主的 Vuetify 组件库和主题变量。在不引入 Vuetify（会
+      带回版本锁定、体积膨胀等问题）的前提下，<code>mytool init</code> 额外提供一份<strong>轻量的
+      纯 CSS 视觉基础</strong>，让不同技术栈的工具"看起来是同一家产品"，同时不强制任何组件库。
+    </p>
+
+    <p><code>frontend/lib/theme.css</code> 是一组颜色变量（<code>--mb-color-bg</code>/
+      <code>--mb-color-primary</code>/<code>--mb-color-error</code> 等，共 11 个语义色 token）+
+      一批可选的基础组件 class，可以整份使用、只挑变量部分接到自己已有的方案上，或整个删掉不用：</p>
+
+    <table class="params">
+      <tr><th>类别</th><th>class</th></tr>
+      <tr><td>布局</td><td><code>.mb-container</code> / <code>.mb-row</code> / <code>.mb-col</code> / <code>.mb-spacer</code>（简易 flex，不含 12 栏栅格）</td></tr>
+      <tr><td>反馈类</td><td><code>.mb-alert</code>（+ <code>--success</code>/<code>--error</code>/<code>--warning</code>/<code>--info</code>）、<code>.mb-chip</code>、<code>.mb-progress-linear</code>（含 <code>--indeterminate</code>）、<code>.mb-spinner</code></td></tr>
+      <tr><td>结构类</td><td><code>.mb-card</code>、<code>.mb-divider</code>、<code>.mb-list-item</code>（含 <code>__avatar</code>/<code>__content</code>/<code>__title</code>/<code>__subtitle</code>/<code>__action</code>）、<code>.mb-dialog-overlay</code>/<code>.mb-dialog</code></td></tr>
+      <tr><td>表单类</td><td><code>.mb-input</code>/<code>.mb-select</code>/<code>.mb-textarea</code>、<code>.mb-field</code>（勾选框/单选框，靠原生 <code>accent-color</code> 跟主题色对齐）、<code>.mb-file-input</code></td></tr>
+      <tr><td>图标</td><td><code>.mb-icon</code>——不内置图标字体，只给"自带 SVG/图片图标"的工具一个跟文字对齐、按字号缩放的容器</td></tr>
+    </table>
+
+    <div class="note">
+      深浅色切换与 <a href="#theme-locale">主题/语言运行时更新</a> 复用同一条通道：页面用
+      <code>bridge.theme</code>/<code>bridge.onThemeChange</code> 给 <code>&lt;body&gt;</code>
+      设置 <code>data-theme="light"|"dark"</code>，<code>theme.css</code> 用 CSS 自定义属性在
+      <code>:root</code> 声明浅色默认值、在 <code>body[data-theme="dark"]</code> 覆盖为深色值，
+      子元素通过变量继承自动换肤，不需要工具自己写两套样式规则或手动切换 class。
+    </div>
+
+    <div class="warn">
+      这份基础样式只是 <code>mytool init</code> 生成的默认文件之一，不是运行时能力，也不由
+      <code>toolbox-bridge.js</code> 提供——纯粹是脚手架层面的约定，工具即使完全不使用它，
+      安装/加载/运行也不受任何影响。图标字体（如 MDI）不在这份基础样式的范围内。
     </div>
   </section>
 
@@ -640,7 +807,14 @@ body { background: var(--bg); color: var(--text); }</code></pre>
       <tr><td><code>entry_frontend</code></td><td>否</td><td>前端入口文件（相对 <code>frontend/</code>），缺省则工具没有 UI</td></tr>
       <tr><td><code>page</code></td><td>否</td><td>落地页路径，缺省用 <code>tool_id</code></td></tr>
       <tr><td><code>api_routes</code></td><td>否</td><td>自定义后端接口：<code>[{"path": "...", "handler": "&lt;module&gt;.&lt;ClassName&gt;"}]</code>，对应 <code>bridge.fetch()</code> 请求的 <code>/api/toolbox/tool/{tool_id}/{path}</code></td></tr>
+      <tr><td><code>locales</code></td><td>否</td><td>工具前端提供翻译文案的语言代码列表，例如 <code>["en", "zh"]</code>；配合 <code>frontend/locales/&lt;code&gt;.json</code> 翻译文件使用，见下方"前端多语言"</td></tr>
+      <tr><td><code>default_locale</code></td><td>否</td><td>没有对应 <code>bridge.locale</code> 翻译文件时的兜底语言，必须包含在 <code>locales</code> 列表里</td></tr>
     </table>
+
+    <div class="note">
+      <code>locales</code>/<code>default_locale</code> 两个字段的完整用法见
+      <a href="#i18n">前端多语言</a>一节。
+    </div>
   </section>
 
   <!-- ============================== cli ============================== -->
@@ -665,8 +839,9 @@ mytool build</code></pre>
 <footer>
   <p>
     本页内容同步自 <a href="https://github.com/PoxenStudio/mybooks" target="_blank" rel="noopener">mybooks/mybooks</a>
-    的 <code>webserver/toolbox/core_api.py</code>、<code>app/public/static/toolbox-bridge.js</code> —— 最近一次同步：<strong>2026-08-25</strong>，
-    对应 Core API <code>1.0.0</code>。如果发现文档和实际行为不一致，请以
+    的 <code>webserver/toolbox/core_api.py</code>、<code>app/public/static/toolbox-bridge.js</code>、
+    <code>document/Toolbox_Dynamic_Design.md</code> 第四节 —— 最近一次同步：<strong>2026-08-26</strong>，
+    对应 Core API <code>1.1.0</code>。如果发现文档和实际行为不一致，请以
     <a href="https://github.com/PoxenStudio/mybooks" target="_blank" rel="noopener">mybooks/mybooks</a>
     仓库代码为准，并提 issue。
   </p>

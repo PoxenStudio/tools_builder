@@ -43,6 +43,9 @@ class {{CLASS_NAME}}(BaseTool):
     #   self.api.messages  站内消息：send_message / cleanup_messages
     #   self.api.storage   工具专属数据目录 + 持久配置：get_work_dir / cleanup_work_dir /
     #                       get_config / set_config
+    #   self.api.settings  系统配置只读白名单：get(key, default)，只有白名单内的 key
+    #                       才能读到（其余一律返回 default），完整名单见 mybooks/mybooks
+    #                       webserver/toolbox/core_api.py 的 SettingsAPI.ALLOWED_KEYS
     @AsyncService.register_function
     def run(self):
         # TODO: 替换成你自己的业务逻辑，下面只是一个可以直接跑起来的最小示例
