@@ -2,7 +2,7 @@
 
 MyBooks Toolbox 外部工具的脚手架 / 构建 / 校验 CLI。
 
-设计背景：MyBooks（`mybooks/mybooks` 仓库）的 Toolbox 支持以"外部工具"的形式动态安装工具，
+设计背景：MyBooks（[MyBooks](https://github.com/PoxenStudio/mybooks) 仓库）的 Toolbox 支持以"外部工具"的形式动态安装工具，
 不需要改动核心仓库代码就能新增功能。
 
 工具作者也可以完全不用这个脚手架——只要产物符合"一个 `manifest.json` + `backend/` + `frontend/`"的约定即可（见下方"包结构"）。
