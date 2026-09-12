@@ -277,6 +277,18 @@
 
     <h3 class="ns"><span class="ns-tag">self.api.calibre</span> Calibre 书库读写</h3>
     <p class="ns-desc">查询、导入、修改书籍元数据与格式文件。</p>
+    <div class="note">
+      下面 <code>get_metadata</code>/<code>set_metadata</code>/<code>import_book</code>
+      里的 <code>Metadata</code> 类型，指的是
+      <code>mybooks/mybooks</code> 仓库 <code>webserver/toolbox/core_api.py</code> 里的
+      <code>BookMetadata</code>——一份结构对齐 Calibre <code>Metadata</code> 的类型契约
+      （<code>typing.Protocol</code>），不是要你直接 <code>import calibre</code>：
+      运行时拿到手的仍是原生 Calibre 对象，直接读写 <code>.title</code>/<code>.authors</code>/
+      <code>.tags</code>/<code>.comments</code>/<code>.series</code>/<code>.pubdate</code>/
+      <code>.identifiers</code> 等属性即可，其余字段/自定义列用 <code>mi.get(field, default)</code>
+      / <code>mi.set(field, val)</code> 读写；类型标注需要时
+      <code>from webserver.toolbox.core_api import BookMetadata</code>。
+    </div>
 
     <details class="method">
       <summary><span class="sig"><span class="ns-prefix">calibre.</span>search_books(query, max_results=20)</span>
@@ -299,7 +311,7 @@
 
     <details class="method">
       <summary><span class="sig"><span class="ns-prefix">calibre.</span>get_metadata(book_id, get_cover=False, cover_as_data=False)</span>
-        <span class="one-line">→ Metadata</span></summary>
+        <span class="one-line">→ BookMetadata</span></summary>
       <div class="body">
         <p>返回指定书籍的 Calibre <code>Metadata</code> 对象。</p>
         <table class="params">
@@ -314,7 +326,7 @@
     <details class="method">
       <summary><span class="sig"><span class="ns-prefix">calibre.</span>set_metadata(book_id, mi, force_changes=True)</span>
         <span class="one-line">→ None</span></summary>
-      <div class="body"><p>写回书籍元数据；<code>mi</code> 是一个 <code>Metadata</code> 对象（可以从 <code>get_metadata</code> 拿到后原地修改再传回）。</p></div>
+      <div class="body"><p>写回书籍元数据；<code>mi</code> 是一个 <code>BookMetadata</code> 对象（可以从 <code>get_metadata</code> 拿到后原地修改再传回）。</p></div>
     </details>
 
     <details class="method">
@@ -349,7 +361,7 @@
         <p>将本地格式文件与给定元数据一并入库，返回新书的 <code>book_id</code>。</p>
         <table class="params">
           <tr><th>参数</th><th>类型</th><th>说明</th></tr>
-          <tr><td><code>mi</code></td><td>Metadata</td><td>要写入的元数据对象</td></tr>
+          <tr><td><code>mi</code></td><td>BookMetadata</td><td>要写入的元数据对象</td></tr>
           <tr><td><code>formats</code></td><td>list[str]</td><td>本地文件绝对路径列表（如 <code>["/tmp/x.epub"]</code>）</td></tr>
         </table>
       </div>
