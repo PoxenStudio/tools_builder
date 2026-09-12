@@ -35,6 +35,7 @@ cd tool_name
 
 mytool validate .      # 打包前先校验一遍
 mytool build            # 产出 dist/tool_name-0.1.0.zip，打印 sha256
+mytool build -f 7z      # 工具比较大时，产出 dist/tool_name-0.1.0.7z（体积更小）
 ```
 
 打包出来的 zip：
@@ -51,7 +52,7 @@ mytool build            # 产出 dist/tool_name-0.1.0.zip，打印 sha256
 |---|---|
 | `mytool init <tool_id>` | 生成一个新的工具项目骨架 |
 | `mytool validate <path>` | 只做校验，不打包；`path` 可以是项目目录，也可以是已有的 zip |
-| `mytool build [dir]` | 校验并打包成 `dist/<tool_id>-<revision>.zip`，打印 sha256 |
+| `mytool build [dir]` | 校验并打包成 `dist/<tool_id>-<revision>.zip`，打印 sha256；加 `-f 7z` 打包成 `.7z`（体积更大的工具可以用它减小包体积，需要本机装有 `7z`/`7za`） |
 | `mytool bump <major\|minor\|patch> [dir]` | 按 semver 规则升级 `manifest.json` 里的 `revision` |
 
 `init` 支持的选项：`--name` / `--author` / `--description` / `--repo-url` / `--locales` /

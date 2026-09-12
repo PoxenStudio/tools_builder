@@ -31,9 +31,10 @@ program
 
 program
   .command('build [dir]')
-  .description('校验并打包成 dist/<tool_id>-<revision>.zip')
-  .action(async (dir) => {
-    await runBuild(dir || '.');
+  .description('校验并打包成 dist/<tool_id>-<revision>.zip（或 .7z，见 --format）')
+  .option('-f, --format <format>', '打包格式：zip 或 7z，默认 zip', 'zip')
+  .action(async (dir, options) => {
+    await runBuild(dir || '.', options);
   });
 
 program

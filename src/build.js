@@ -1,9 +1,10 @@
 'use strict';
 
 const fs = require('fs');
+const os = require('os');
 const path = require('path');
 const crypto = require('crypto');
-const { execSync } = require('child_process');
+const { execSync, execFileSync } = require('child_process');
 
 const AdmZip = require('adm-zip');
 
@@ -28,6 +29,27 @@ function sha256File(filePath) {
 
 const EXCLUDE_RE = /(^|\/)(__pycache__\/|\.pyc$|\.DS_Store$)/;
 
+const SEVEN_ZIP_CANDIDATES = ['7z', '7za', '7zz'];
+
+function findSevenZipBinary() {
+  for (const bin of SEVEN_ZIP_CANDIDATES) {
+    try {
+      execFileSync(bin, ['--help'], { stdio: 'ignore' });
+      return bin;
+    } catch (err) {
+      if (err.code !== 'ENOENT') return bin; // 存在但退出码非 0，仍视为可用
+    }
+  }
+  return null;
+}
+
+function copyDirFiltered(srcDir, destDir) {
+  fs.cpSync(srcDir, destDir, {
+    recursive: true,
+    filter: (src) => !EXCLUDE_RE.test(path.relative(srcDir, src).split(path.sep).join('/')),
+  });
+}
+
 /**
  * `mytool build [dir]` 的实现：
  *   1) 校验 manifest.json（复用 validate 的同一套逻辑，见 4.2.1 节）
@@ -36,7 +58,24 @@ const EXCLUDE_RE = /(^|\/)(__pycache__\/|\.pyc$|\.DS_Store$)/;
  *      强制任何打包器
  *   3) 按 3.1 节结构组装 dist/<tool_id>-<revision>.zip，打印 sha256
  */
-async function runBuild(dir) {
+async function runBuild(dir, options = {}) {
+  const format = (options.format || 'zip').toLowerCase();
+  if (format !== 'zip' && format !== '7z') {
+    console.error(`✗ 不支持的 --format：${options.format}（可选 zip | 7z）`);
+    process.exitCode = 1;
+    return;
+  }
+
+  let sevenZipBin = null;
+  if (format === '7z') {
+    sevenZipBin = findSevenZipBinary();
+    if (!sevenZipBin) {
+      console.error('✗ 未找到 7z / 7za 可执行文件，请先安装 7-Zip（如 macOS: brew install sevenzip 或 p7zip；Windows: winget install 7zip.7zip；Linux: apt install p7zip-full）');
+      process.exitCode = 1;
+      return;
+    }
+  }
+
   const projectDir = path.resolve(dir);
 
   let manifest;
@@ -72,39 +111,67 @@ async function runBuild(dir) {
     }
   }
 
-  const zip = new AdmZip();
-  zip.addLocalFile(path.join(projectDir, 'manifest.json'));
-
-  const iconPath = path.join(projectDir, 'icon.png');
-  if (fs.existsSync(iconPath)) {
-    zip.addLocalFile(iconPath);
-  }
-
   const backendDir = path.join(projectDir, 'backend');
-  if (fs.existsSync(backendDir)) {
-    zip.addLocalFolder(backendDir, 'backend', (zipEntryPath) => !EXCLUDE_RE.test(zipEntryPath));
-  } else {
+  if (!fs.existsSync(backendDir)) {
     console.error(`✗ 找不到 backend/ 目录：${backendDir}`);
     process.exitCode = 1;
     return;
   }
 
-  if (fs.existsSync(frontendSrcDir)) {
-    zip.addLocalFolder(frontendSrcDir, 'frontend', (zipEntryPath) => !EXCLUDE_RE.test(zipEntryPath));
-  }
-
   const distDir = path.join(projectDir, 'dist');
   fs.mkdirSync(distDir, { recursive: true });
-  const zipName = `${manifest.tool_id}-${manifest.revision}.zip`;
-  const zipPath = path.join(distDir, zipName);
-  zip.writeZip(zipPath);
+  const archiveName = `${manifest.tool_id}-${manifest.revision}.${format}`;
+  const archivePath = path.join(distDir, archiveName);
 
-  const sha256 = sha256File(zipPath);
-  console.log(`✔ 已打包：${path.relative(process.cwd(), zipPath) || zipPath}`);
+  if (format === 'zip') {
+    const zip = new AdmZip();
+    zip.addLocalFile(path.join(projectDir, 'manifest.json'));
+
+    const iconPath = path.join(projectDir, 'icon.png');
+    if (fs.existsSync(iconPath)) {
+      zip.addLocalFile(iconPath);
+    }
+
+    zip.addLocalFolder(backendDir, 'backend', (zipEntryPath) => !EXCLUDE_RE.test(zipEntryPath));
+
+    if (fs.existsSync(frontendSrcDir)) {
+      zip.addLocalFolder(frontendSrcDir, 'frontend', (zipEntryPath) => !EXCLUDE_RE.test(zipEntryPath));
+    }
+
+    zip.writeZip(archivePath);
+  } else {
+    // 7z: 系统里没有内存打包能力，先把要打进包的文件收集到一个临时目录，再调用系统 7z/7za 压缩。
+    const stagingDir = fs.mkdtempSync(path.join(os.tmpdir(), 'mytool-build-'));
+    try {
+      fs.copyFileSync(path.join(projectDir, 'manifest.json'), path.join(stagingDir, 'manifest.json'));
+
+      const iconPath = path.join(projectDir, 'icon.png');
+      if (fs.existsSync(iconPath)) {
+        fs.copyFileSync(iconPath, path.join(stagingDir, 'icon.png'));
+      }
+
+      copyDirFiltered(backendDir, path.join(stagingDir, 'backend'));
+
+      if (fs.existsSync(frontendSrcDir)) {
+        copyDirFiltered(frontendSrcDir, path.join(stagingDir, 'frontend'));
+      }
+
+      if (fs.existsSync(archivePath)) fs.rmSync(archivePath);
+      execFileSync(sevenZipBin, ['a', '-mx=9', '-y', archivePath, '.'], {
+        cwd: stagingDir,
+        stdio: 'inherit',
+      });
+    } finally {
+      fs.rmSync(stagingDir, { recursive: true, force: true });
+    }
+  }
+
+  const sha256 = sha256File(archivePath);
+  console.log(`✔ 已打包：${path.relative(process.cwd(), archivePath) || archivePath}`);
   console.log(`  sha256: ${sha256}`);
   console.log('  （提交给 mybooks.top 商店登记，或走开发者模式本地上传时会用到这个包，见 3.4/3.5 节）');
 
-  return { zipPath, sha256, manifest };
+  return { zipPath: archivePath, sha256, manifest };
 }
 
 module.exports = { runBuild };
