@@ -248,7 +248,7 @@
       <a href="https://github.com/PoxenStudio/tools_builder" target="_blank" rel="noopener">README</a>。
     </p>
     <div class="badges">
-      <span class="badge">Core API <code>1.1.0</code></span>
+      <span class="badge">Core API <code>1.2.0</code></span>
       <span class="badge">CLI 命令 <code>mytool</code></span>
       <span class="badge">类型 <code>builtin</code> / <code>tool</code></span>
       <span class="badge" id="sync-badge">同步自 mybooks/mybooks · 见页尾</span>
@@ -268,7 +268,8 @@
     <h2>后端：Core API <span class="anchor">#core-api</span></h2>
     <p class="desc">
       挂在 <code>self.api</code> 上，按命名空间划分：<code>calibre</code> / <code>db</code> /
-      <code>tasks</code> / <code>messages</code> / <code>storage</code> / <code>settings</code>。所有方法都是同步调用，
+      <code>tasks</code> / <code>messages</code> / <code>storage</code> / <code>settings</code> /
+      <code>utils</code>。所有方法都是同步调用，
       工具作者不需要关心背后是 Calibre 的 <code>legacy</code> DB、<code>new_api</code>，
       还是应用自己的 SQLAlchemy session——这层解耦正是 Core API 存在的意义，接口本身按
       语义化版本演进（manifest.json 的 <code>core_api_version</code> 声明兼容的最低版本）。
@@ -549,6 +550,37 @@
           外部工具本来就没有这个能力，内置工具这么做也过不了后续的代码审查。
         </div>
       </div>
+    </details>
+
+    <h3 class="ns"><span class="ns-tag">self.api.utils</span> 通用文本/日期处理</h3>
+    <p class="ns-desc">
+      纯函数，不依赖工具自身的状态，转发 mybooks/mybooks 仓库 <code>webserver/utils.py</code>
+      里的同名函数，行为完全一致——书籍导入/整理类工具解析文件名、标准化标题排序、解析各种
+      格式日期时常用得到，不需要自己再写一份。
+    </p>
+
+    <details class="method">
+      <summary><span class="sig"><span class="ns-prefix">utils.</span>strip(s)</span>
+        <span class="one-line">→ str</span></summary>
+      <div class="body"><p>去除首尾空白，并过滤掉字符串里其余不可打印字符（如 <code>\x00</code> 一类控制字符）。转发 <code>super_strip</code>。</p></div>
+    </details>
+
+    <details class="method">
+      <summary><span class="sig"><span class="ns-prefix">utils.</span>get_title_sort(title)</span>
+        <span class="one-line">→ str</span></summary>
+      <div class="body"><p>把书名转成用于排序的 ASCII 小写形式（内部走 Calibre 的 unicode-decomposition），转换失败时原样返回 <code>title</code>，不抛异常。</p></div>
+    </details>
+
+    <details class="method">
+      <summary><span class="sig"><span class="ns-prefix">utils.</span>guess_title_author_from_filename(name)</span>
+        <span class="one-line">→ (str, str|None)</span></summary>
+      <div class="body"><p>从"《书名》作者：某某"这类常见命名习惯的文件名里拆出 <code>(title, author)</code>；<code>name</code> 里不含"作者"关键字时，<code>author</code> 返回 <code>None</code>，<code>title</code> 原样返回（去除首尾空白）。</p></div>
+    </details>
+
+    <details class="method">
+      <summary><span class="sig"><span class="ns-prefix">utils.</span>parse_date(date_str)</span>
+        <span class="one-line">→ datetime|None</span></summary>
+      <div class="body"><p>按常见格式（含中文"年月日"，如 <code>2024年5月1日</code>/<code>2024-05-01</code>/<code>2024/05</code>）解析日期字符串，返回带 UTC 时区的 <code>datetime</code>；解析不出来或传空值时返回 <code>None</code>。</p></div>
     </details>
 
     <div class="warn">
@@ -853,8 +885,8 @@ mytool build</code></pre>
   <p>
     本页内容同步自 <a href="https://github.com/PoxenStudio/mybooks" target="_blank" rel="noopener">mybooks/mybooks</a>
     的 <code>webserver/toolbox/core_api.py</code>、<code>app/public/static/toolbox-bridge.js</code>、
-    <code>document/Toolbox_Dynamic_Design.md</code> 第四节 —— 最近一次同步：<strong>2026-08-26</strong>，
-    对应 Core API <code>1.1.0</code>。如果发现文档和实际行为不一致，请以
+    <code>document/Toolbox_Dynamic_Design.md</code> 第四节 —— 最近一次同步：<strong>2026-09-12</strong>，
+    对应 Core API <code>1.2.0</code>。如果发现文档和实际行为不一致，请以
     <a href="https://github.com/PoxenStudio/mybooks" target="_blank" rel="noopener">mybooks/mybooks</a>
     仓库代码为准，并提 issue。
   </p>

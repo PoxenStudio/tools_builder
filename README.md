@@ -119,6 +119,12 @@ tool_name/
 - `self.api.messages` —— 站内消息：`send_message` / `cleanup_messages`
 - `self.api.storage` —— 工具专属数据目录 + 持久配置：`get_work_dir` / `cleanup_work_dir` /
   `get_config` / `set_config`
+- `self.api.settings` —— 系统配置只读白名单：`get(key, default)`，只有显式登记过的 key
+  才能读到真实值，其余一律返回 `default`；完整名单见 mybooks/mybooks 仓库
+  `webserver/toolbox/core_api.py` 的 `SettingsAPI.ALLOWED_KEYS`
+- `self.api.utils` —— 通用文本/日期处理：`strip` / `get_title_sort` /
+  `guess_title_author_from_filename` / `parse_date`，转发 mybooks/mybooks 仓库
+  `webserver/utils.py` 里的同名纯函数，行为完全一致
 
 这份代码依赖真实的 MyBooks 运行环境（Calibre、SQLAlchemy session 等），无法脱离 MyBooks
 单独跑，`mytool` 目前也不模拟这部分——实际验证逻辑要走开发者模式装进一个真实的

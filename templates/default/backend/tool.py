@@ -1,13 +1,12 @@
 """
 {{NAME}} —— MyBooks Toolbox 工具后端代码
 
-由 `mybooks-tool init` 生成的模板。演示最常用
+由 `mytool init` 生成的模板。演示最常用
 的几个：`self.api.calibre` / `self.api.tasks`。
 
-这份模板运行时依赖真实的 MyBooks 后端环境（Calibre、SQLAlchemy session 等，由
-BaseTool/AsyncService 在被调用时自动注入），无法脱离 MyBooks 独立运行 —— 用
-`mybooks-tool build` 打包后，走开发者模式（`ENABLE_TOOLBOX_DEV_MODE`）装进一个真实的
-MyBooks 实例才能实际调用，`mybooks-tool dev`（未来的能力）也不会模拟这部分。
+这份模板运行时依赖真实的 MyBooks 后端环境由BaseTool/AsyncService 在被调用时自动注入），
+无法脱离 MyBooks 独立运行 —— 用`mytool build .` 打包后，走开发者模式
+（`ENABLE_TOOLBOX_DEV_MODE`）装进一个真实的MyBooks 服务才能实际调用。
 """
 from webserver.toolbox.base_tool import BaseTool
 from webserver.services import AsyncService
@@ -46,6 +45,8 @@ class {{CLASS_NAME}}(BaseTool):
     #   self.api.settings  系统配置只读白名单：get(key, default)，只有白名单内的 key
     #                       才能读到（其余一律返回 default），完整名单见 mybooks/mybooks
     #                       webserver/toolbox/core_api.py 的 SettingsAPI.ALLOWED_KEYS
+    #   self.api.utils     通用文本/日期处理：strip / get_title_sort /
+    #                       guess_title_author_from_filename / parse_date
     @AsyncService.register_function
     def run(self):
         # TODO: 替换成你自己的业务逻辑，下面只是一个可以直接跑起来的最小示例
