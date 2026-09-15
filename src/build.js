@@ -27,7 +27,16 @@ function sha256File(filePath) {
   return hash.digest('hex');
 }
 
-const EXCLUDE_RE = /(^|\/)(__pycache__\/|\.pyc$|\.DS_Store$)/;
+// 支持两种分隔符：adm-zip 的过滤器在 Windows 上收到的是反斜杠路径（还带 zip 内前缀，
+// 形如 backend\\__pycache__\\tool.cpython-313.pyc），7z 分支传入的是正斜杠相对路径。
+// 另外 .pyc 分支原本被前面的 (^|/) 锚住，只能匹配“文件名恰好是 .pyc”的情况，这里放宽为
+// “文件名以 .pyc 结尾”。
+const EXCLUDE_RE = /(^|[\\/])(__pycache__[\\/]|[^\\/]*\.pyc$|\.DS_Store$)/;
+
+/** 判断一个待打包条目路径是否应被排除（字节码 / .DS_Store）。 */
+function shouldExclude(entryPath) {
+  return EXCLUDE_RE.test(entryPath);
+}
 
 const SEVEN_ZIP_CANDIDATES = ['7z', '7za', '7zz'];
 
@@ -46,7 +55,7 @@ function findSevenZipBinary() {
 function copyDirFiltered(srcDir, destDir) {
   fs.cpSync(srcDir, destDir, {
     recursive: true,
-    filter: (src) => !EXCLUDE_RE.test(path.relative(srcDir, src).split(path.sep).join('/')),
+    filter: (src) => !shouldExclude(path.relative(srcDir, src)),
   });
 }
 
@@ -132,10 +141,10 @@ async function runBuild(dir, options = {}) {
       zip.addLocalFile(iconPath);
     }
 
-    zip.addLocalFolder(backendDir, 'backend', (zipEntryPath) => !EXCLUDE_RE.test(zipEntryPath));
+    zip.addLocalFolder(backendDir, 'backend', (zipEntryPath) => !shouldExclude(zipEntryPath));
 
     if (fs.existsSync(frontendSrcDir)) {
-      zip.addLocalFolder(frontendSrcDir, 'frontend', (zipEntryPath) => !EXCLUDE_RE.test(zipEntryPath));
+      zip.addLocalFolder(frontendSrcDir, 'frontend', (zipEntryPath) => !shouldExclude(zipEntryPath));
     }
 
     zip.writeZip(archivePath);
@@ -174,4 +183,4 @@ async function runBuild(dir, options = {}) {
   return { zipPath: archivePath, sha256, manifest };
 }
 
-module.exports = { runBuild };
+module.exports = { runBuild, shouldExclude };

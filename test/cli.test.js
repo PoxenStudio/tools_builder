@@ -9,7 +9,7 @@ const path = require('path');
 const AdmZip = require('adm-zip');
 
 const { runInit } = require('../src/init');
-const { runBuild } = require('../src/build');
+const { runBuild, shouldExclude } = require('../src/build');
 const { runValidate } = require('../src/validate');
 const { runBump, bumpVersion } = require('../src/bump');
 const { validateManifestObject, ManifestError } = require('../src/manifest');
@@ -161,6 +161,43 @@ test('bump updates manifest.json revision in place', async () => {
 
   const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf-8'));
   assert.equal(manifest.revision, '0.2.0');
+
+  fs.rmSync(workDir, { recursive: true, force: true });
+});
+
+// Windows 下 adm-zip 的过滤器收到的是反斜杠形式且带 zip 内前缀：
+//   "backend\\__pycache__\\tool.cpython-313.pyc"
+test('shouldExclude: 两种分隔符都要认', () => {
+  assert.ok(shouldExclude('backend\\__pycache__\\'));
+  assert.ok(shouldExclude('backend\\__pycache__\\tool.cpython-313.pyc'));
+  assert.ok(shouldExclude('frontend\\lib\\.DS_Store'));
+  assert.ok(shouldExclude('backend\\tool.pyc'));
+  // POSIX / 7z 分支：归一化成 / 的相对路径
+  assert.ok(shouldExclude('__pycache__/tool.pyc'));
+  assert.ok(shouldExclude('backend/__pycache__/tool.pyc'));
+  assert.ok(shouldExclude('frontend/lib/.DS_Store'));
+  // 正常源码不能被误伤
+  assert.ok(!shouldExclude('backend/tool.py'));
+  assert.ok(!shouldExclude('backend\\tool.py'));
+  assert.ok(!shouldExclude('frontend/locales/zh.json'));
+});
+
+test('build: 项目里有 __pycache__ 时 zip 不含字节码', async () => {
+  const workDir = tmpDir('mytool-test-bytecode-');
+  fs.mkdirSync(path.join(workDir, 'backend', '__pycache__'), { recursive: true });
+  fs.writeFileSync(path.join(workDir, 'manifest.json'), JSON.stringify({
+    tool_id: 'demo_tool', name: 'n', description: 'd', revision: '1.0.0', author: 'a',
+    core_api_version: '1.0.0', entry_backend: 'tool.DemoTool',
+    repo_url: 'https://example.com/demo_tool',
+  }));
+  fs.writeFileSync(path.join(workDir, 'backend', 'tool.py'), 'x = 1');
+  fs.writeFileSync(path.join(workDir, 'backend', '__pycache__', 'tool.cpython-313.pyc'), 'bytecode');
+  fs.writeFileSync(path.join(workDir, 'backend', 'legacy.pyc'), 'bytecode');
+
+  const { result } = await captureConsole(() => runBuild(workDir));
+  const names = new AdmZip(result.zipPath).getEntries().map((e) => e.entryName);
+  assert.deepEqual(names.filter((n) => /pycache|\.pyc/.test(n)), []);
+  assert.ok(names.includes('backend/tool.py'));
 
   fs.rmSync(workDir, { recursive: true, force: true });
 });
