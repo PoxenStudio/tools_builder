@@ -178,7 +178,7 @@ async function runBuild(dir, options = {}) {
   const sha256 = sha256File(archivePath);
   console.log(`✔ 已打包：${path.relative(process.cwd(), archivePath) || archivePath}`);
   console.log(`  sha256: ${sha256}`);
-  console.log('  （提交给 mybooks.top 商店登记，或走开发者模式本地上传时会用到这个包，见 3.4/3.5 节）');
+  console.log('  （提交给 mybooks.top 商店登记(邮箱poxenstudio@gmail.com)，或走开发者模式本地上传时会用到这个包）');
 
   return { zipPath: archivePath, sha256, manifest };
 }
