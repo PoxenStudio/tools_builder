@@ -51,6 +51,12 @@ body {
   color: var(--mb-color-text);
 }
 
+/* 工具页面容易对隐藏元素显示出边框，补一条 !important 兜底，这样任何元素只要加了
+   hidden 属性就一定会被隐藏，不用每个组件类再单独写一条 [hidden] 覆盖规则。 */
+[hidden] {
+  display: none !important;
+}
+
 .mb-card {
   background: var(--mb-color-surface);
   border: 1px solid var(--mb-color-border);
