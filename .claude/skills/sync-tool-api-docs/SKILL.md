@@ -40,9 +40,16 @@ description: Regenerate docs/index.html (the Toolbox Core API / toolbox-bridge.j
 1. **读取权威来源**（在 `mybooks/mybooks` 仓库里）：
    - `webserver/toolbox/core_api.py` 整个文件——这是 `#core-api` 部分方法列表、签名、
      docstring 的唯一来源。逐个 class（`CalibreAPI`/`AppDBAPI`/`TasksAPI`/`MessagesAPI`/
-     `StorageAPI`）核对 `docs/index.html` 里对应命名空间下的 `<details class="method">` 块：
-     新增的方法要补一个新块，删掉的方法要移除对应块，签名/参数变了要同步改
-     `<span class="sig">` 和 `<table class="params">`。
+     `StorageAPI`/`SettingsAPI`/`UtilsAPI`）核对 `docs/index.html` 里对应命名空间下的
+     `<details class="method">` 块：新增的方法要补一个新块，删掉的方法要移除对应块，
+     签名/参数变了要同步改 `<span class="sig">`。
+     **不要只对签名和一句话摘要，每个方法的 docstring 都有 `Args`/`Returns`（部分还有
+     `Raises`）——这些要逐条搬进 `<table class="params">`（每个 Args 条目一行）和方法说明的
+     `<p>` 文字里，不能只写函数名和返回类型；`docs/index.html` 里历史上出现过"方法存在但
+     没有参数表""参数表缺了新增参数""签名和源码对不上"这几类遗漏，同步时要逐个方法比对
+     docstring 全文，不能只扫一眼方法名列表。遇到 docstring 和 `docs/index.html` 现有文字
+     描述的行为不一致（例如返回值语义、副作用），以 docstring/代码为准改写，不要因为"看着像
+     手写的说明"就跳过不核对。
    - `webserver/toolbox/core_api.py` 顶部的 `CORE_API_VERSION` 常量——同步到页面顶部
      `.badge` 里的版本号，以及页尾"最近一次同步"那句话里的版本号。
    - `app/public/static/toolbox-bridge.js`——核对 `#bridge` 部分的 `bridge.*` 字段/方法

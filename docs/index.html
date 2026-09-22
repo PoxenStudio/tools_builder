@@ -382,14 +382,15 @@
     </details>
 
     <details class="method">
-      <summary><span class="sig"><span class="ns-prefix">calibre.</span>search_books(query, max_results=20)</span>
+      <summary><span class="sig"><span class="ns-prefix">calibre.</span>search_books(query, max_results=20, include_comments=False)</span>
         <span class="one-line">→ list[dict]</span></summary>
       <div class="body">
-        <p>按 Calibre 搜索语法查询书籍，返回 dict 列表（含 <code>id</code>/<code>title</code>/<code>authors</code>/<code>available_formats</code> 等字段）。</p>
+        <p>按 Calibre 搜索语法查询书籍，返回 dict 列表（含 <code>id</code>/<code>title</code>/<code>authors</code>/<code>formats</code> 等字段）。</p>
         <table class="params">
           <tr><th>参数</th><th>类型</th><th>说明</th></tr>
-          <tr><td><code>query</code></td><td>str</td><td>Calibre 搜索表达式，如 <code>authors:="张三"</code></td></tr>
-          <tr><td><code>max_results</code></td><td>int</td><td>最多返回条数，默认 20</td></tr>
+          <tr><td><code>query</code></td><td>str</td><td>Calibre 搜索表达式，如 <code>tag:小说</code></td></tr>
+          <tr><td><code>max_results</code></td><td>int</td><td>最多返回的书籍数，默认 20</td></tr>
+          <tr><td><code>include_comments</code></td><td>bool</td><td>是否在结果里带上简介字段，默认 False</td></tr>
         </table>
       </div>
     </details>
@@ -397,19 +398,25 @@
     <details class="method">
       <summary><span class="sig"><span class="ns-prefix">calibre.</span>search_ids(query)</span>
         <span class="one-line">→ list[int]</span></summary>
-      <div class="body"><p>同上，但只返回排序后的 <code>book_id</code> 列表，不取详情，适合只需要遍历 id 的场景（比全量取详情快）。</p></div>
+      <div class="body">
+        <p>按 Calibre 搜索语法查询书籍，只返回排序后的 <code>book_id</code> 列表，不取详情，适合只需要遍历 id 的场景（比全量取详情快）。</p>
+        <table class="params">
+          <tr><th>参数</th><th>类型</th><th>说明</th></tr>
+          <tr><td><code>query</code></td><td>str</td><td>Calibre 搜索表达式</td></tr>
+        </table>
+      </div>
     </details>
 
     <details class="method">
       <summary><span class="sig"><span class="ns-prefix">calibre.</span>get_metadata(book_id, get_cover=False, cover_as_data=False)</span>
         <span class="one-line">→ BookMetadata</span></summary>
       <div class="body">
-        <p>返回指定书籍的 Calibre <code>Metadata</code> 对象。</p>
+        <p>返回指定书籍的元数据对象（类型见上方 <code>BookMetadata</code> 说明）。</p>
         <table class="params">
           <tr><th>参数</th><th>类型</th><th>说明</th></tr>
-          <tr><td><code>book_id</code></td><td>int</td><td>Calibre 书籍 ID</td></tr>
-          <tr><td><code>get_cover</code></td><td>bool</td><td>是否附带封面（写入磁盘临时文件路径），默认 False</td></tr>
-          <tr><td><code>cover_as_data</code></td><td>bool</td><td>封面以内存字节形式附带（配合 <code>get_cover</code>），默认 False</td></tr>
+          <tr><td><code>book_id</code></td><td>int</td><td>书籍 id</td></tr>
+          <tr><td><code>get_cover</code></td><td>bool</td><td>是否附带封面（返回对象上会带封面路径/数据，取决于 <code>cover_as_data</code>），默认 False</td></tr>
+          <tr><td><code>cover_as_data</code></td><td>bool</td><td>为 True 时封面以内存字节形式返回，而不是磁盘路径；仅在 <code>get_cover=True</code> 时有意义，默认 False</td></tr>
         </table>
       </div>
     </details>
@@ -417,19 +424,39 @@
     <details class="method">
       <summary><span class="sig"><span class="ns-prefix">calibre.</span>set_metadata(book_id, mi, force_changes=True)</span>
         <span class="one-line">→ None</span></summary>
-      <div class="body"><p>写回书籍元数据；<code>mi</code> 是一个 <code>BookMetadata</code> 对象（可以从 <code>get_metadata</code> 拿到后原地修改再传回）。</p></div>
+      <div class="body">
+        <p>写回书籍元数据。</p>
+        <table class="params">
+          <tr><th>参数</th><th>类型</th><th>说明</th></tr>
+          <tr><td><code>book_id</code></td><td>int</td><td>书籍 id</td></tr>
+          <tr><td><code>mi</code></td><td>BookMetadata</td><td>新的元数据对象，通常是 <code>get_metadata</code>/<code>new_metadata</code> 得到的实例改好字段后传回</td></tr>
+          <tr><td><code>force_changes</code></td><td>bool</td><td>是否强制写入未显式标记为"已修改"的字段，默认 True，保证调用方直接改属性即可生效</td></tr>
+        </table>
+      </div>
     </details>
 
     <details class="method">
       <summary><span class="sig"><span class="ns-prefix">calibre.</span>get_data_as_dict(ids)</span>
         <span class="one-line">→ list[dict]</span></summary>
-      <div class="body"><p>按 <code>book_id</code> 列表批量返回书籍 dict（含 <code>available_formats</code>/<code>title</code> 等字段），比逐个 <code>get_metadata</code> 更省调用次数。</p></div>
+      <div class="body">
+        <p>按 <code>book_id</code> 列表批量返回书籍 dict（含 <code>available_formats</code>/<code>title</code> 等字段），比逐个 <code>get_metadata</code> 更省调用次数；返回顺序与 <code>ids</code> 无关。</p>
+        <table class="params">
+          <tr><th>参数</th><th>类型</th><th>说明</th></tr>
+          <tr><td><code>ids</code></td><td>list[int]</td><td>书籍 id 列表</td></tr>
+        </table>
+      </div>
     </details>
 
     <details class="method">
       <summary><span class="sig"><span class="ns-prefix">calibre.</span>cover(book_id)</span>
         <span class="one-line">→ bytes | None</span></summary>
-      <div class="body"><p>返回书籍封面的原始字节，没有封面时返回 <code>None</code>。</p></div>
+      <div class="body">
+        <p>返回书籍封面的原始字节；没有封面时返回 <code>None</code>。</p>
+        <table class="params">
+          <tr><th>参数</th><th>类型</th><th>说明</th></tr>
+          <tr><td><code>book_id</code></td><td>int</td><td>书籍 id</td></tr>
+        </table>
+      </div>
     </details>
 
     <details class="method">
@@ -439,8 +466,8 @@
         <p>设置书籍封面。</p>
         <table class="params">
           <tr><th>参数</th><th>类型</th><th>说明</th></tr>
-          <tr><td><code>book_id</code></td><td>int</td><td>书籍 ID</td></tr>
-          <tr><td><code>cover</code></td><td>bytes</td><td>封面原始字节</td></tr>
+          <tr><td><code>book_id</code></td><td>int</td><td>书籍 id</td></tr>
+          <tr><td><code>cover</code></td><td>bytes</td><td>封面图片的原始字节（如 JPEG/PNG 数据）</td></tr>
         </table>
       </div>
     </details>
@@ -449,11 +476,11 @@
       <summary><span class="sig"><span class="ns-prefix">calibre.</span>import_book(mi, formats)</span>
         <span class="one-line">→ int | None</span></summary>
       <div class="body">
-        <p>将本地格式文件与给定元数据一并入库，返回新书的 <code>book_id</code>。</p>
+        <p>将本地格式文件与给定元数据一并入库，返回新书的 <code>book_id</code>；入库失败时返回 <code>None</code>。</p>
         <table class="params">
           <tr><th>参数</th><th>类型</th><th>说明</th></tr>
-          <tr><td><code>mi</code></td><td>BookMetadata</td><td>要写入的元数据对象</td></tr>
-          <tr><td><code>formats</code></td><td>list[str]</td><td>本地文件绝对路径列表（如 <code>["/tmp/x.epub"]</code>）</td></tr>
+          <tr><td><code>mi</code></td><td>BookMetadata</td><td>新书的元数据，通常由 <code>new_metadata</code> 构造</td></tr>
+          <tr><td><code>formats</code></td><td>list[str]</td><td>本地格式文件的绝对路径列表（如 <code>["/tmp/x.epub"]</code>）</td></tr>
         </table>
       </div>
     </details>
@@ -461,62 +488,140 @@
     <details class="method">
       <summary><span class="sig"><span class="ns-prefix">calibre.</span>import_file(user_id, file_path, title, authors, *, delete_after_import=True)</span>
         <span class="one-line">→ int</span></summary>
-      <div class="body"><p>比 <code>import_book</code> 更高一层：从文件本身读取元数据兜底、清洗标题/作者、创建 <code>Item</code>
-        采集记录、可选删除源文件，是"下载后入库"这类场景的推荐入口（<code>rare_book_downloader</code> 等工具在用）。</p></div>
+      <div class="body">
+        <p>比 <code>import_book</code> 更高一层：从文件本身读取元数据兜底、清洗标题/作者、创建 <code>Item</code>
+          采集记录、可选删除源文件，是"下载后入库"这类场景的推荐入口（<code>rare_book_downloader</code> 等工具在用）。</p>
+        <table class="params">
+          <tr><th>参数</th><th>类型</th><th>说明</th></tr>
+          <tr><td><code>user_id</code></td><td>int</td><td>发起导入的用户 id（用于记录/权限相关上下文）</td></tr>
+          <tr><td><code>file_path</code></td><td>str</td><td>待导入文件的绝对路径</td></tr>
+          <tr><td><code>title</code></td><td>str</td><td>书名</td></tr>
+          <tr><td><code>authors</code></td><td>list[str]</td><td>作者列表</td></tr>
+          <tr><td><code>delete_after_import</code></td><td>bool</td><td>导入成功后是否删除原始文件，默认 True</td></tr>
+        </table>
+        <p>返回新书的 <code>book_id</code>。</p>
+      </div>
     </details>
 
     <details class="method">
       <summary><span class="sig"><span class="ns-prefix">calibre.</span>merge_formats(source_book_id, target_book_id)</span>
         <span class="one-line">→ list[str]</span></summary>
-      <div class="body"><p>把 <code>source_book_id</code> 书籍里 <code>target_book_id</code> 尚不具备的格式复制过去，返回新增的格式名列表（大写）。不会删除来源书籍。</p></div>
+      <div class="body">
+        <p>把源书的格式文件合并进目标书；合并后源书里对应格式被移动，不再重复保留。</p>
+        <table class="params">
+          <tr><th>参数</th><th>类型</th><th>说明</th></tr>
+          <tr><td><code>source_book_id</code></td><td>int</td><td>源书 book_id</td></tr>
+          <tr><td><code>target_book_id</code></td><td>int</td><td>目标书 book_id</td></tr>
+        </table>
+        <p>返回实际合并过去的格式名列表。</p>
+      </div>
     </details>
 
     <details class="method">
-      <summary><span class="sig"><span class="ns-prefix">calibre.</span>add_format(book_id, fmt, file_path)</span>
+      <summary><span class="sig"><span class="ns-prefix">calibre.</span>add_format(book_id, fmt, file_path, replace=True)</span>
         <span class="one-line">→ None</span></summary>
-      <div class="body"><p>给书籍添加/替换一个格式文件；<code>file_path</code> 可以是磁盘路径字符串，也可以是已打开的文件对象。</p></div>
+      <div class="body">
+        <p>给书籍添加一个格式文件。</p>
+        <table class="params">
+          <tr><th>参数</th><th>类型</th><th>说明</th></tr>
+          <tr><td><code>book_id</code></td><td>int</td><td>书籍 id</td></tr>
+          <tr><td><code>fmt</code></td><td>str</td><td>格式名（如 <code>"EPUB"</code>），大小写不敏感，Calibre 内部会统一处理</td></tr>
+          <tr><td><code>file_path</code></td><td>str</td><td>本地格式文件的绝对路径</td></tr>
+          <tr><td><code>replace</code></td><td>bool</td><td>该书已存在同名格式时是否替换，默认 True；传 False 时若已存在同格式则不做任何修改</td></tr>
+        </table>
+      </div>
     </details>
 
     <details class="method">
       <summary><span class="sig"><span class="ns-prefix">calibre.</span>format_abspath(book_id, fmt)</span>
         <span class="one-line">→ str | None</span></summary>
-      <div class="body"><p>返回指定格式文件在磁盘上的绝对路径；文件不存在时返回 <code>None</code>。</p></div>
+      <div class="body">
+        <p>返回某本书某个格式文件在磁盘上的绝对路径；该格式不存在时返回 <code>None</code>。</p>
+        <table class="params">
+          <tr><th>参数</th><th>类型</th><th>说明</th></tr>
+          <tr><td><code>book_id</code></td><td>int</td><td>书籍 id</td></tr>
+          <tr><td><code>fmt</code></td><td>str</td><td>格式名（如 <code>"EPUB"</code>）</td></tr>
+        </table>
+      </div>
     </details>
 
     <details class="method">
       <summary><span class="sig"><span class="ns-prefix">calibre.</span>get_custom(book_id, label)</span>
         <span class="one-line">→ any</span></summary>
-      <div class="body"><p>读取自定义列（Calibre 里以 <code>#</code> 开头的列，这里传不带 <code>#</code> 的 label）的值。</p></div>
+      <div class="body">
+        <p>读取单本书某个自定义列（Calibre 里以 <code>#</code> 开头的列，这里传不带 <code>#</code> 的 label）的值；返回类型取决于列本身（文本/数字/布尔/列表等）。</p>
+        <table class="params">
+          <tr><th>参数</th><th>类型</th><th>说明</th></tr>
+          <tr><td><code>book_id</code></td><td>int</td><td>书籍 id</td></tr>
+          <tr><td><code>label</code></td><td>str</td><td>自定义列名，不带 <code>#</code> 前缀</td></tr>
+        </table>
+        <p>系统内已有的自定义列参见 <code>webserver/constants.py</code> 里的 <code>CALIBRE_COLUMN_*</code>
+          常量（去掉 <code>#</code> 前缀即为这里的 <code>label</code>）：<code>CALIBRE_COLUMN_CATEGORY</code>
+          (<code>#category</code>)、<code>CALIBRE_COLUMN_FOLDER</code> (<code>#folder</code>)、
+          <code>CALIBRE_COLUMN_BOOK_TYPE</code> (<code>#book_type</code>)、
+          <code>CALIBRE_COLUMN_PHY_COUNT</code> (<code>#book_count</code>)、
+          <code>CALIBRE_COLUMN_EXT_LINK</code> (<code>#ext_link</code>)、
+          <code>CALIBRE_COLUMN_LOCATION</code> (<code>#location</code>)、
+          <code>CALIBRE_COLUMN_DYNAMIC_COVER</code> (<code>#dynamic_cover</code>)、
+          <code>CALIBRE_COLUMN_TRANSLATORS</code> (<code>#translators</code>)、
+          <code>CALIBRE_COLUMN_CATALOG</code> (<code>#catalog</code>)。</p>
+      </div>
     </details>
 
     <details class="method">
       <summary><span class="sig"><span class="ns-prefix">calibre.</span>set_custom(label, values)</span>
         <span class="one-line">→ None</span></summary>
-      <div class="body"><p>批量写入自定义列的值，<code>values</code> 为 <code>{book_id: value}</code> 形式的字典（一次调用可以写多本书）。</p></div>
+      <div class="body">
+        <p>批量写入自定义列的值。</p>
+        <table class="params">
+          <tr><th>参数</th><th>类型</th><th>说明</th></tr>
+          <tr><td><code>label</code></td><td>str</td><td>自定义列名，不带 <code>#</code> 前缀（同上方 <code>get_custom</code> 列出的 <code>CALIBRE_COLUMN_*</code> 常量）</td></tr>
+          <tr><td><code>values</code></td><td>dict</td><td><code>{book_id: value}</code>，一次性写入多本书</td></tr>
+        </table>
+      </div>
     </details>
 
     <details class="method">
       <summary><span class="sig"><span class="ns-prefix">calibre.</span>remove_formats(values)</span>
         <span class="one-line">→ None</span></summary>
-      <div class="body"><p>批量删除格式文件，<code>values</code> 为 <code>{book_id: [fmt, ...]}</code>。</p></div>
+      <div class="body">
+        <p>批量删除格式文件。</p>
+        <table class="params">
+          <tr><th>参数</th><th>类型</th><th>说明</th></tr>
+          <tr><td><code>values</code></td><td>dict</td><td><code>{book_id: [fmt, ...]}</code>，fmt 为格式名（如 <code>"EPUB"</code>）</td></tr>
+        </table>
+      </div>
     </details>
 
     <details class="method">
       <summary><span class="sig"><span class="ns-prefix">calibre.</span>set_language(book_id, language)</span>
         <span class="one-line">→ None</span></summary>
-      <div class="body"><p>把书籍的语言字段更新为给定语言代码（如 <code>"zh"</code>/<code>"zht"</code>/<code>"en"</code>）。</p></div>
+      <div class="body">
+        <p>设置书籍语言。</p>
+        <table class="params">
+          <tr><th>参数</th><th>类型</th><th>说明</th></tr>
+          <tr><td><code>book_id</code></td><td>int</td><td>书籍 id</td></tr>
+          <tr><td><code>language</code></td><td>str</td><td>语言代码（如 <code>"zho"</code>/<code>"eng"</code>，ISO 639-2/B）</td></tr>
+        </table>
+      </div>
     </details>
 
     <details class="method">
       <summary><span class="sig"><span class="ns-prefix">calibre.</span>all_book_ids()</span>
         <span class="one-line">→ list[int]</span></summary>
-      <div class="body"><p>返回书库中所有书籍的 ID 列表（已排序）。批量扫描类工具（格式精简、语言检测等）常用这个做遍历入口。</p></div>
+      <div class="body"><p>返回书库中所有书籍的 ID 列表。批量扫描类工具（格式精简、语言检测等）常用这个做遍历入口。</p></div>
     </details>
 
     <details class="method">
       <summary><span class="sig"><span class="ns-prefix">calibre.</span>delete_book(book_id)</span>
         <span class="one-line">→ None</span></summary>
-      <div class="body"><p>从 Calibre 书库及应用自己的 <code>Item</code> 表中一并删除指定书籍，不可撤销，请在有明确用户确认的操作里使用。</p></div>
+      <div class="body">
+        <p>从 Calibre 书库及应用自己的 <code>Item</code> 表中一并删除指定书籍，不可撤销，请在有明确用户确认的操作里使用。</p>
+        <table class="params">
+          <tr><th>参数</th><th>类型</th><th>说明</th></tr>
+          <tr><td><code>book_id</code></td><td>int</td><td>书籍 id</td></tr>
+        </table>
+      </div>
     </details>
 
     <h3 class="ns"><span class="ns-tag">self.api.db</span> 应用数据库</h3>
@@ -525,25 +630,50 @@
     <details class="method">
       <summary><span class="sig"><span class="ns-prefix">db.</span>get_item_by_book_id(book_id)</span>
         <span class="one-line">→ dict | None</span></summary>
-      <div class="body"><p>返回 <code>{"id", "book_id", "collector_id"}</code>；书籍没有采集记录时返回 <code>None</code>。</p></div>
+      <div class="body">
+        <p>按 book_id 查找对应的 <code>Item</code> 记录（应用侧对每本 Calibre 书籍的附加信息，如入库人）；返回 <code>{"id", "book_id", "collector_id"}</code>，不存在时返回 <code>None</code>。</p>
+        <table class="params">
+          <tr><th>参数</th><th>类型</th><th>说明</th></tr>
+          <tr><td><code>book_id</code></td><td>int</td><td>Calibre 书籍 id</td></tr>
+        </table>
+      </div>
     </details>
 
     <details class="method">
       <summary><span class="sig"><span class="ns-prefix">db.</span>create_item(book_id, collector_id)</span>
         <span class="one-line">→ dict</span></summary>
-      <div class="body"><p>创建一条采集记录，返回同上格式的 dict。</p></div>
+      <div class="body">
+        <p>为一本书创建 <code>Item</code> 记录（登记入库人）并持久化，返回新建记录的 <code>{"id", "book_id", "collector_id"}</code>。</p>
+        <table class="params">
+          <tr><th>参数</th><th>类型</th><th>说明</th></tr>
+          <tr><td><code>book_id</code></td><td>int</td><td>Calibre 书籍 id</td></tr>
+          <tr><td><code>collector_id</code></td><td>int</td><td>入库人（Reader）的用户 id</td></tr>
+        </table>
+      </div>
     </details>
 
     <details class="method">
       <summary><span class="sig"><span class="ns-prefix">db.</span>delete_item_by_book_id(book_id)</span>
         <span class="one-line">→ None</span></summary>
-      <div class="body"><p>删除该书籍的采集记录（存在才删，不存在直接忽略）。</p></div>
+      <div class="body">
+        <p>删除某本书对应的 <code>Item</code> 记录（不存在时静默跳过）。</p>
+        <table class="params">
+          <tr><th>参数</th><th>类型</th><th>说明</th></tr>
+          <tr><td><code>book_id</code></td><td>int</td><td>Calibre 书籍 id</td></tr>
+        </table>
+      </div>
     </details>
 
     <details class="method">
       <summary><span class="sig"><span class="ns-prefix">db.</span>get_reader(user_id)</span>
         <span class="one-line">→ dict | None</span></summary>
-      <div class="body"><p>返回 <code>{"id", "username", "name", "admin"}</code>；用户不存在时返回 <code>None</code>。</p></div>
+      <div class="body">
+        <p>按用户 id 查找 <code>Reader</code>（应用用户账号）；返回 <code>{"id", "username", "name", "admin"}</code>，不存在时返回 <code>None</code>。</p>
+        <table class="params">
+          <tr><th>参数</th><th>类型</th><th>说明</th></tr>
+          <tr><td><code>user_id</code></td><td>int</td><td>用户 id</td></tr>
+        </table>
+      </div>
     </details>
 
     <h3 class="ns"><span class="ns-tag">self.api.tasks</span> 后台任务</h3>
@@ -552,25 +682,54 @@
     <details class="method">
       <summary><span class="sig"><span class="ns-prefix">tasks.</span>create_task(progress_data=None)</span>
         <span class="one-line">→ int</span></summary>
-      <div class="body"><p>创建一个后台任务，返回 <code>task_id</code>。任务名称取自工具类的 <code>service_item_name</code> 属性；后台任务面板里该工具的 <code>service_type</code> 自动带 <code>"tool:&lt;tool_id&gt;"</code> 前缀，与内置工具区分展示。</p></div>
+      <div class="body">
+        <p>创建一个后台任务记录供前端轮询进度，返回 <code>task_id</code>。任务名称取自工具类的 <code>service_item_name</code> 属性；后台任务面板里该工具的 <code>service_type</code> 自动带 <code>"tool:&lt;tool_id&gt;"</code> 前缀，与内置工具区分展示。</p>
+        <table class="params">
+          <tr><th>参数</th><th>类型</th><th>说明</th></tr>
+          <tr><td><code>progress_data</code></td><td>dict | None</td><td>任务的初始自定义数据（如描述、总数），可为 None</td></tr>
+        </table>
+      </div>
     </details>
 
     <details class="method">
       <summary><span class="sig"><span class="ns-prefix">tasks.</span>update_progress(task_id, progress, progress_data=None)</span>
         <span class="one-line">→ None</span></summary>
-      <div class="body"><p>更新任务进度，<code>progress</code> 为 0–100 的整数。</p></div>
+      <div class="body">
+        <p>更新任务进度。</p>
+        <table class="params">
+          <tr><th>参数</th><th>类型</th><th>说明</th></tr>
+          <tr><td><code>task_id</code></td><td>int</td><td><code>create_task</code> 返回的任务 id</td></tr>
+          <tr><td><code>progress</code></td><td>int</td><td>进度百分比（0–100）</td></tr>
+          <tr><td><code>progress_data</code></td><td>dict | None</td><td>本次一并更新的自定义数据，可为 None（不更新）</td></tr>
+        </table>
+      </div>
     </details>
 
     <details class="method">
       <summary><span class="sig"><span class="ns-prefix">tasks.</span>complete_task(task_id, error_message=None)</span>
         <span class="one-line">→ None</span></summary>
-      <div class="body"><p>标记任务完成；传 <code>error_message</code> 则标记为失败并附带错误描述。</p></div>
+      <div class="body">
+        <p>标记任务结束；传 <code>error_message</code> 则标记为失败并附带错误描述。</p>
+        <table class="params">
+          <tr><th>参数</th><th>类型</th><th>说明</th></tr>
+          <tr><td><code>task_id</code></td><td>int</td><td><code>create_task</code> 返回的任务 id</td></tr>
+          <tr><td><code>error_message</code></td><td>str | None</td><td>失败原因；为 None 时视为成功完成</td></tr>
+        </table>
+      </div>
     </details>
 
     <details class="method">
       <summary><span class="sig"><span class="ns-prefix">tasks.</span>make_progress_callback(task_id, progress_data_factory=None, outer_callback=None)</span>
         <span class="one-line">→ callable</span></summary>
-      <div class="body"><p>构造一个 <code>(progress: int) -&gt; None</code> 的回调函数，消除手写进度回调时重复的样板代码；常见于给下载器/转换器传 <code>callback=</code> 参数。</p></div>
+      <div class="body">
+        <p>构造一个 <code>(progress: int) -&gt; None</code> 的回调函数，便于把进度上报接进那些只接受单参数回调的循环/子调用里，消除手写进度回调时重复的样板代码；常见于给下载器/转换器传 <code>callback=</code> 参数。</p>
+        <table class="params">
+          <tr><th>参数</th><th>类型</th><th>说明</th></tr>
+          <tr><td><code>task_id</code></td><td>int</td><td><code>create_task</code> 返回的任务 id</td></tr>
+          <tr><td><code>progress_data_factory</code></td><td>callable | None</td><td>可选，按当前 progress 生成本次的 progress_data</td></tr>
+          <tr><td><code>outer_callback</code></td><td>callable | None</td><td>可选，在更新进度之后再额外调用一次的回调（如日志/中止检查）</td></tr>
+        </table>
+      </div>
     </details>
 
     <h3 class="ns"><span class="ns-tag">self.api.messages</span> 站内消息</h3>
@@ -580,9 +739,11 @@
       <summary><span class="sig"><span class="ns-prefix">messages.</span>send_message(user_id, msg, status="info")</span>
         <span class="one-line">→ None</span></summary>
       <div class="body">
+        <p>给用户发一条站内信；发送前会先清理该用户同内容的旧消息（避免重复刷屏）。<code>user_id</code>
+          为假值（<code>0</code>/<code>None</code>）时直接跳过，不发送。</p>
         <table class="params">
           <tr><th>参数</th><th>类型</th><th>说明</th></tr>
-          <tr><td><code>user_id</code></td><td>int</td><td>接收用户 ID</td></tr>
+          <tr><td><code>user_id</code></td><td>int</td><td>接收用户 ID；为假值时跳过</td></tr>
           <tr><td><code>msg</code></td><td>str</td><td>消息内容</td></tr>
           <tr><td><code>status</code></td><td>str</td><td><code>"info"</code> / <code>"success"</code> / <code>"warning"</code> / <code>"danger"</code>，决定前端展示的样式</td></tr>
         </table>
@@ -592,7 +753,15 @@
     <details class="method">
       <summary><span class="sig"><span class="ns-prefix">messages.</span>cleanup_messages(user_id, msg_content, days=31)</span>
         <span class="one-line">→ int</span></summary>
-      <div class="body"><p>清理该用户内容重复或超过 <code>days</code> 天未读的消息，返回清理条数。<code>send_message</code> 内部已经会做一次同内容去重，一般不需要单独调用。</p></div>
+      <div class="body">
+        <p>删除用户 <code>days</code> 天前发送过的同内容旧消息，返回实际删除的消息条数。<code>send_message</code> 内部已经会做一次同内容去重，一般不需要单独调用。</p>
+        <table class="params">
+          <tr><th>参数</th><th>类型</th><th>说明</th></tr>
+          <tr><td><code>user_id</code></td><td>int</td><td>用户 id</td></tr>
+          <tr><td><code>msg_content</code></td><td>str</td><td>要匹配清理的消息正文</td></tr>
+          <tr><td><code>days</code></td><td>int</td><td>保留天数，早于该天数的同内容消息会被删除，默认 31</td></tr>
+        </table>
+      </div>
     </details>
 
     <h3 class="ns"><span class="ns-tag">self.api.storage</span> 工具专属存储</h3>
@@ -601,25 +770,44 @@
     <details class="method">
       <summary><span class="sig"><span class="ns-prefix">storage.</span>get_work_dir(unique_key=None)</span>
         <span class="one-line">→ str</span></summary>
-      <div class="body"><p>返回并创建一个工作目录的绝对路径。传 <code>unique_key</code>（如任务参数、URL）时按其哈希生成独立子目录，适合"每次调用一个临时目录"的场景；不传则返回该工具的共享目录。</p></div>
+      <div class="body">
+        <p>获取（并按需创建）该工具专属的临时工作目录。</p>
+        <table class="params">
+          <tr><th>参数</th><th>类型</th><th>说明</th></tr>
+          <tr><td><code>unique_key</code></td><td>str | None</td><td>可选的区分键（如任务 id），传入时每个 key 对应独立的子目录，避免并发任务互相覆盖文件；不传则返回工具共享的工作目录</td></tr>
+        </table>
+      </div>
     </details>
 
     <details class="method">
       <summary><span class="sig"><span class="ns-prefix">storage.</span>cleanup_work_dir(work_dir)</span>
         <span class="one-line">→ None</span></summary>
-      <div class="body"><p>递归删除工作目录；失败只记录警告，不向上抛异常（避免因为清理失败影响主流程的成功状态）。</p></div>
+      <div class="body">
+        <p>删除 <code>get_work_dir</code> 创建的目录及其内容；失败只记录警告，不向上抛异常（避免因为清理失败影响主流程的成功状态）。</p>
+        <table class="params">
+          <tr><th>参数</th><th>类型</th><th>说明</th></tr>
+          <tr><td><code>work_dir</code></td><td>str</td><td><code>get_work_dir</code> 返回的目录路径</td></tr>
+        </table>
+      </div>
     </details>
 
     <details class="method">
       <summary><span class="sig"><span class="ns-prefix">storage.</span>get_config()</span>
         <span class="one-line">→ dict</span></summary>
-      <div class="body"><p>读取该工具的持久化配置（JSON 文件），文件不存在或解析失败时返回 <code>{}</code>，不抛异常。</p></div>
+      <div class="body"><p>读取该工具的持久配置（<code>config.json</code>），文件不存在或读取失败时返回 <code>{}</code>，不抛异常。</p></div>
     </details>
 
     <details class="method">
       <summary><span class="sig"><span class="ns-prefix">storage.</span>set_config(data)</span>
         <span class="one-line">→ None</span></summary>
-      <div class="body"><p>把 <code>data</code>（dict）写入该工具的持久化配置文件；适合保存 API Key、用户偏好这类"重启也要记住"的设置。写入失败会抛 <code>RuntimeError</code>。</p></div>
+      <div class="body">
+        <p>整份覆盖写入该工具的持久配置（<code>config.json</code>，UTF-8，缩进 2）；适合保存 API Key、用户偏好这类"重启也要记住"的设置。</p>
+        <table class="params">
+          <tr><th>参数</th><th>类型</th><th>说明</th></tr>
+          <tr><td><code>data</code></td><td>dict</td><td>要保存的配置内容，会以 JSON 整体覆盖旧文件</td></tr>
+        </table>
+        <p>写入失败会抛 <code>RuntimeError</code>（原始异常作为 <code>__cause__</code>）。</p>
+      </div>
     </details>
 
     <h3 class="ns"><span class="ns-tag">self.api.settings</span> 系统配置只读白名单</h3>
@@ -665,25 +853,49 @@
     <details class="method">
       <summary><span class="sig"><span class="ns-prefix">utils.</span>strip(s)</span>
         <span class="one-line">→ str</span></summary>
-      <div class="body"><p>去除首尾空白，并过滤掉字符串里其余不可打印字符（如 <code>\x00</code> 一类控制字符）。转发 <code>super_strip</code>。</p></div>
+      <div class="body">
+        <p>去除首尾空白，并过滤掉字符串里其余不可打印字符（如 <code>\x00</code> 一类控制字符）。转发 <code>super_strip</code>。</p>
+        <table class="params">
+          <tr><th>参数</th><th>类型</th><th>说明</th></tr>
+          <tr><td><code>s</code></td><td>str</td><td>待处理的字符串</td></tr>
+        </table>
+      </div>
     </details>
 
     <details class="method">
       <summary><span class="sig"><span class="ns-prefix">utils.</span>get_title_sort(title)</span>
         <span class="one-line">→ str</span></summary>
-      <div class="body"><p>把书名转成用于排序的 ASCII 小写形式（内部走 Calibre 的 unicode-decomposition），转换失败时原样返回 <code>title</code>，不抛异常。</p></div>
+      <div class="body">
+        <p>把书名转成用于排序的 ASCII 小写形式（内部走 Calibre 的 unicode-decomposition），转换失败时原样返回 <code>title</code>，不抛异常。</p>
+        <table class="params">
+          <tr><th>参数</th><th>类型</th><th>说明</th></tr>
+          <tr><td><code>title</code></td><td>str</td><td>原始书名</td></tr>
+        </table>
+      </div>
     </details>
 
     <details class="method">
       <summary><span class="sig"><span class="ns-prefix">utils.</span>guess_title_author_from_filename(name)</span>
         <span class="one-line">→ (str, str|None)</span></summary>
-      <div class="body"><p>从"《书名》作者：某某"这类常见命名习惯的文件名里拆出 <code>(title, author)</code>；<code>name</code> 里不含"作者"关键字时，<code>author</code> 返回 <code>None</code>，<code>title</code> 原样返回（去除首尾空白）。</p></div>
+      <div class="body">
+        <p>从"《书名》作者：某某"这类常见命名习惯的文件名里拆出 <code>(title, author)</code>；<code>name</code> 里不含"作者"关键字时，<code>author</code> 返回 <code>None</code>，<code>title</code> 原样返回（去除首尾空白）。</p>
+        <table class="params">
+          <tr><th>参数</th><th>类型</th><th>说明</th></tr>
+          <tr><td><code>name</code></td><td>str</td><td>文件名（不含目录，可含或不含扩展名）</td></tr>
+        </table>
+      </div>
     </details>
 
     <details class="method">
       <summary><span class="sig"><span class="ns-prefix">utils.</span>parse_date(date_str)</span>
         <span class="one-line">→ datetime|None</span></summary>
-      <div class="body"><p>按常见格式（含中文"年月日"，如 <code>2024年5月1日</code>/<code>2024-05-01</code>/<code>2024/05</code>）解析日期字符串，返回带 UTC 时区的 <code>datetime</code>；解析不出来或传空值时返回 <code>None</code>。</p></div>
+      <div class="body">
+        <p>按常见格式（含中文"年月日"，如 <code>2024年5月1日</code>/<code>2024-05-01</code>/<code>2024/05</code>）解析日期字符串，返回带 UTC 时区的 <code>datetime</code>；解析不出来或传空值时返回 <code>None</code>。</p>
+        <table class="params">
+          <tr><th>参数</th><th>类型</th><th>说明</th></tr>
+          <tr><td><code>date_str</code></td><td>str</td><td>日期字符串，如 <code>"2024-01-01"</code>、<code>"2024年1月1日"</code></td></tr>
+        </table>
+      </div>
     </details>
 
     <div class="warn">
