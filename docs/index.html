@@ -324,7 +324,7 @@
       <a href="https://github.com/PoxenStudio/tools_builder" target="_blank" rel="noopener">README</a>。
     </p>
     <div class="badges">
-      <span class="badge">Core API <code>1.2.0</code></span>
+      <span class="badge">Core API <code>1.3.0</code></span>
       <span class="badge">CLI 命令 <code>mytool</code></span>
       <span class="badge">类型 <code>builtin</code> / <code>tool</code></span>
       <span class="badge" id="sync-badge">同步自 mybooks/mybooks · 见页尾</span>
@@ -354,8 +354,8 @@
     <h3 class="ns"><span class="ns-tag">self.api.calibre</span> Calibre 书库读写</h3>
     <p class="ns-desc">查询、导入、修改书籍元数据与格式文件。</p>
     <div class="note">
-      下面 <code>get_metadata</code>/<code>set_metadata</code>/<code>import_book</code>
-      里的 <code>Metadata</code> 类型，指的是
+      下面 <code>new_metadata</code>/<code>get_metadata</code>/<code>set_metadata</code>/
+      <code>import_book</code> 里的 <code>Metadata</code> 类型，指的是
       <code>mybooks/mybooks</code> 仓库 <code>webserver/toolbox/core_api.py</code> 里的
       <code>BookMetadata</code>——一份结构对齐 Calibre <code>Metadata</code> 的类型契约
       （<code>typing.Protocol</code>），不是要你直接 <code>import calibre</code>：
@@ -365,6 +365,21 @@
       / <code>mi.set(field, val)</code> 读写；类型标注需要时
       <code>from webserver.toolbox.core_api import BookMetadata</code>。
     </div>
+
+    <details class="method">
+      <summary><span class="sig"><span class="ns-prefix">calibre.</span>new_metadata(title, authors=None)</span>
+        <span class="one-line">→ BookMetadata</span></summary>
+      <div class="body">
+        <p>构造一个新的元数据对象，常见于"生成新书"场景，配合 <code>import_book</code> 使用；把
+          <code>Metadata(title, authors)</code> 的构造逻辑收在这里，调用方因此不需要自己
+          <code>import calibre</code>。</p>
+        <table class="params">
+          <tr><th>参数</th><th>类型</th><th>说明</th></tr>
+          <tr><td><code>title</code></td><td>str</td><td>书名</td></tr>
+          <tr><td><code>authors</code></td><td>list[str] | None</td><td>作者列表，缺省时为一个本地化的"未知作者"</td></tr>
+        </table>
+      </div>
+    </details>
 
     <details class="method">
       <summary><span class="sig"><span class="ns-prefix">calibre.</span>search_books(query, max_results=20)</span>
@@ -974,8 +989,8 @@ mytool build</code></pre>
   <p>
     本页内容同步自 <a href="https://github.com/PoxenStudio/mybooks" target="_blank" rel="noopener">mybooks/mybooks</a>
     的 <code>webserver/toolbox/core_api.py</code>、<code>app/public/static/toolbox-bridge.js</code>、
-    <code>document/Toolbox_Dynamic_Design.md</code> 第四节 —— 最近一次同步：<strong>2026-09-12</strong>，
-    对应 Core API <code>1.2.0</code>。如果发现文档和实际行为不一致，请以
+    <code>document/Toolbox_Dynamic_Design.md</code> 第四节 —— 最近一次同步：<strong>2026-09-22</strong>
+    （mybooks@ab57fe9f），对应 Core API <code>1.3.0</code>。如果发现文档和实际行为不一致，请以
     <a href="https://github.com/PoxenStudio/mybooks" target="_blank" rel="noopener">mybooks/mybooks</a>
     仓库代码为准，并提 issue。
   </p>
