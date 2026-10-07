@@ -52,6 +52,14 @@ description: Regenerate docs/index.html (the Toolbox Core API / toolbox-bridge.j
      手写的说明"就跳过不核对。
    - `webserver/toolbox/core_api.py` 顶部的 `CORE_API_VERSION` 常量——同步到页面顶部
      `.badge` 里的版本号，以及页尾"最近一次同步"那句话里的版本号。
+     **常量正上方还有一段"版本与 MyBooks 发行版的对应"注释（`x.y.z -> vA.B.C`），这是一个
+     重要的依赖声明，不能遗漏**：这张表要原样同步到 `docs/index.html` 页面靠前位置（紧跟
+     顶部 badge 之后，当前是一个 `.warn` 提示块），不能只更新 badge 里的版本号就当作同步
+     完成了。新增一行版本映射时，在 `docs/index.html` 的表格里补一行，不要整段重写。
+     同时留意 `webserver/toolbox/toolbox_manager.py` 的 `validate_manifest` 当前只检查
+     `core_api_version` 是不是合法 semver 字符串，**不会**拿它和运行中的 `CORE_API_VERSION`
+     做比对——这一行为如果变了（加上了真正的兼容性检查），上面那段关于"不会自动拦截版本
+     不匹配"的措辞要跟着改，不要凭旧印象照抄。
    - `app/public/static/toolbox-bridge.js`——核对 `#bridge` 部分的 `bridge.*` 字段/方法
      是否有增删；这个文件里如果出现了新的 API 路径前缀（当前是
      `/api/toolbox/tool/{tool_id}/{path}`），`#bridge` 和 `#theme-locale` 两处引用都要改。

@@ -324,12 +324,30 @@
       <a href="https://github.com/PoxenStudio/tools_builder" target="_blank" rel="noopener">README</a>。
     </p>
     <div class="badges">
-      <span class="badge">Core API <code>1.3.0</code></span>
+      <span class="badge">Core API <code>1.4.0</code></span>
       <span class="badge">CLI 命令 <code>mytool</code></span>
       <span class="badge">类型 <code>builtin</code> / <code>tool</code></span>
       <span class="badge" id="sync-badge">同步自 mybooks/mybooks · 见页尾</span>
     </div>
   </header>
+
+  <div class="warn">
+    <strong>Core API 版本 ↔ MyBooks 发行版</strong>：<code>manifest.json</code> 里的
+    <code>core_api_version</code> 声明的是"工具依赖的最低 Core API 版本"，每个 MyBooks
+    发行版捆绑固定的 <code>CORE_API_VERSION</code>，新方法只会出现在更高的发行版里。
+    <table class="params">
+      <tr><th>Core API 版本</th><th>起始支持的 MyBooks 发行版</th></tr>
+      <tr><td><code>1.3.0</code></td><td><code>v4.3.1</code></td></tr>
+      <tr><td><code>1.4.0</code></td><td><code>v4.4.2</code></td></tr>
+    </table>
+    <p>表的来源是 <code>mybooks/mybooks</code> 仓库 <code>webserver/toolbox/core_api.py</code>
+      顶部 <code>CORE_API_VERSION</code> 常量旁边的注释；<code>mytool validate</code>/
+      <code>build</code> 目前只检查 <code>core_api_version</code> 是不是合法的语义化版本号
+      （<code>x.y.z</code>），<strong>不会</strong>拿它和目标 MyBooks 实际运行的
+      <code>CORE_API_VERSION</code> 做比对——写工具时自己对照这张表，把
+      <code>core_api_version</code> 设成你实际用到的最新方法对应的版本号；如果填低了，
+      工具会在用户的 MyBooks 上装得上，却在运行到新方法时才报错（比装不上更难排查）。</p>
+  </div>
 
   <div class="note">
     <strong>怎么用这份文档</strong>：工具的 <code>backend/tool.py</code> 里，工具类继承
@@ -444,6 +462,30 @@
           <tr><th>参数</th><th>类型</th><th>说明</th></tr>
           <tr><td><code>ids</code></td><td>list[int]</td><td>书籍 id 列表</td></tr>
         </table>
+        <div class="warn">
+          Calibre 底层实现是遍历整个书库、逐条判断 <code>id in ids</code> 后再过滤——即使
+          <code>ids</code> 只有几本书，耗时也和书库总量成正比；在循环里反复传 <code>[book_id]</code>
+          单本调用会退化成 O(N²)，应该一次性传入全部 id。只需要读取单个字段（而不是完整的
+          书籍 dict）时，优先用下面的 <code>get_field_map</code>，开销小得多。
+        </div>
+      </div>
+    </details>
+
+    <details class="method">
+      <summary><span class="sig"><span class="ns-prefix">calibre.</span>get_field_map(field, book_ids)</span>
+        <span class="one-line">→ dict[int, any]</span></summary>
+      <div class="body">
+        <p>批量读取同一个字段在多本书上的值，不构造完整元数据，适合全库统计。相比
+          <code>get_data_as_dict</code>——后者为每本书构造包含所有字段（格式、路径、全部自定义列等）
+          的完整 dict，书多时耗时、耗内存；本方法只读取一个字段，直接走内存缓存，开销小得多，
+          且返回 <code>{book_id: value}</code>，可按 id 直接取值。只需单个字段时优先用本方法。</p>
+        <table class="params">
+          <tr><th>参数</th><th>类型</th><th>说明</th></tr>
+          <tr><td><code>field</code></td><td>str</td><td>Calibre 字段名。内置字段直接写名字（如 <code>"tags"</code>/<code>"series"</code>/<code>"languages"</code>）；自定义列须带 <code>#</code> 前缀（如 <code>"#category"</code>），与 <code>get_custom</code> 的 <code>label</code> 不同（不带 <code>#</code>）</td></tr>
+          <tr><td><code>book_ids</code></td><td>list[int]</td><td>书籍 id 列表；为空时返回空 dict，<strong>不会</strong>回退为全部书籍——全库统计需自行传入全部 id（如 <code>all_book_ids()</code>）</td></tr>
+        </table>
+        <p>返回 <code>{book_id: value}</code>；值类型取决于字段（多值字段为 tuple，无值为
+          <code>None</code> 或空 tuple）。字段不存在时抛出 <code>KeyError</code>。</p>
       </div>
     </details>
 
@@ -562,7 +604,6 @@
           <code>CALIBRE_COLUMN_PHY_COUNT</code> (<code>#book_count</code>)、
           <code>CALIBRE_COLUMN_EXT_LINK</code> (<code>#ext_link</code>)、
           <code>CALIBRE_COLUMN_LOCATION</code> (<code>#location</code>)、
-          <code>CALIBRE_COLUMN_DYNAMIC_COVER</code> (<code>#dynamic_cover</code>)、
           <code>CALIBRE_COLUMN_TRANSLATORS</code> (<code>#translators</code>)、
           <code>CALIBRE_COLUMN_CATALOG</code> (<code>#catalog</code>)。</p>
       </div>
@@ -1201,8 +1242,8 @@ mytool build</code></pre>
   <p>
     本页内容同步自 <a href="https://github.com/PoxenStudio/mybooks" target="_blank" rel="noopener">mybooks/mybooks</a>
     的 <code>webserver/toolbox/core_api.py</code>、<code>app/public/static/toolbox-bridge.js</code>、
-    <code>document/Toolbox_Dynamic_Design.md</code> 第四节 —— 最近一次同步：<strong>2026-09-22</strong>
-    （mybooks@ab57fe9f），对应 Core API <code>1.3.0</code>。如果发现文档和实际行为不一致，请以
+    <code>document/Toolbox_Dynamic_Design.md</code> 第四节 —— 最近一次同步：<strong>2026-10-07</strong>
+    （mybooks@413ee896），对应 Core API <code>1.4.0</code>。如果发现文档和实际行为不一致，请以
     <a href="https://github.com/PoxenStudio/mybooks" target="_blank" rel="noopener">mybooks/mybooks</a>
     仓库代码为准，并提 issue。
   </p>
